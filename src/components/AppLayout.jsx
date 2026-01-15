@@ -3,16 +3,10 @@ import BottomNav from "./BottomNav";
 
 const MainLayout = () => {
   return (
-    // 'pb-16' adds padding at bottom so content doesn't hide behind the fixed footer
-    <div className="min-h-screen bg-base-100 pb-16">
-      
-      {/* <Outlet /> is a placeholder where child routes (Dashboard, Holdings, etc.) render */}
+    <section className="w-full min-h-screen pl-8 pr-8 pt-4 box-border">
       <Outlet />
-
-      {/* The Footer stays outside the Outlet, so it persists */}
       <BottomNav />
-      
-    </div>
+    </section>
   );
 };
 
