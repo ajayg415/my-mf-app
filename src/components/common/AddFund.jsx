@@ -32,7 +32,6 @@ const AddFund = ({ fundDetails = {} }) => {
   const [selectedFund, setSelectedFund] = useState({
     folio: "",
     key: new Date().getTime(),
-    nav: "",
     units: "",
     isFavorite: false,
     // ...mockFundDetails,
@@ -54,7 +53,6 @@ const AddFund = ({ fundDetails = {} }) => {
 
   const handleContinue = () => {
     if (!selectedFund) return;
-    console.log("Saving:", selectedFund);
     setFundCode(selectedFund.code);
   };
 
@@ -137,11 +135,11 @@ const AddFund = ({ fundDetails = {} }) => {
                       type="number"
                       placeholder="0"
                       className="input input-bordered w-full input-sm"
-                      value={selectedFund.nav}
+                      value={selectedFund.units}
                       onChange={(e) =>
                         setSelectedFund({
                           ...selectedFund,
-                          nav: e.target.value,
+                          units: e.target.value,
                         })
                       }
                     />

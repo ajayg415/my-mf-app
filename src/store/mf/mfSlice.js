@@ -58,10 +58,14 @@ const mfSlice = createSlice({
       }
       saveUserData(state.userData);
     },
+    updateAllFunds(state, action) {
+      state.userData.funds = action.payload;
+      saveUserData(state.userData);
+    }
   },
 });
 
-export const { setData, setUserData, addOrUpdateFund, setUserName } =
+export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds } =
   mfSlice.actions;
 
 export default mfSlice.reducer;

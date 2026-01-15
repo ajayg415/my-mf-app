@@ -10,13 +10,19 @@ import Settings from './components/settings/Settings.jsx';
 
 import { setUserData } from './store/mf/mfSlice.js';
 import { fetchUserData } from './utils/storage.js';
+import { getLatestNav } from './utils/api.js';
 
 export default function App() {
 	const dispatch = useDispatch();
 
 	useEffect(() => {
 		const userData = fetchUserData();
-		userData && dispatch(setUserData(userData));
+		if (userData) {
+			dispatch(setUserData(userData));
+			userData.funds.forEach(fund => {
+				getLatestNav(fund.code);
+			})
+		}
 	}, []);
 
 	return (
