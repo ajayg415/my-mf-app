@@ -1,8 +1,11 @@
+import AddFund from "../common/AddFund";
+
 const Holdings = () => {
     return (
-        <div>
+        <section className="holdings-section">
             <h1>Welcome to the Holdings</h1>
-        </div>
+            <AddFund />
+        </section>
     );
 }
 export default Holdings;

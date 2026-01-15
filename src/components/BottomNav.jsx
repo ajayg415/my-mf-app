@@ -9,7 +9,7 @@ const BottomNav = () => {
                 className={({ isActive }) => isActive ? "dock-active dock-item" : "dock-item"}
             >
                 <LayoutDashboard size={20} />
-                <span className="dock-label">Home</span>
+                <span className="dock-label">Dashboard</span>
             </NavLink>
 
             <NavLink 
@@ -17,7 +17,7 @@ const BottomNav = () => {
                 className={({ isActive }) => isActive ? "dock-active dock-item" : "dock-item"}
             >
                 <PieChart size={20} />
-                <span className="dock-label">Inbox</span>
+                <span className="dock-label">Holdings</span>
             </NavLink>
 
 
