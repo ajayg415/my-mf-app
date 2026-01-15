@@ -8,14 +8,15 @@ import Holdings from './components/holdings/Holdings.jsx';
 import Favourite from './components/favourite/Favourite.jsx';
 import Settings from './components/settings/Settings.jsx';
 
-import { setData } from './store/mf/mfSlice.js';
+import { setUserData } from './store/mf/mfSlice.js';
+import { fetchUserData } from './utils/storage.js';
 
 export default function App() {
 	const dispatch = useDispatch();
 
 	useEffect(() => {
-		console.log('setting data from App.jsx');
-		dispatch(setData('Ajay Gangisetti1'));
+		const userData = fetchUserData();
+		userData && dispatch(setUserData(userData));
 	}, []);
 
 	return (

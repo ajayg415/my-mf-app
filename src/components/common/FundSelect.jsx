@@ -51,8 +51,11 @@ const FundSelect = ({ onSelect }) => {
         cacheOptions // Remembers previous searches to save API calls
         loadOptions={loadOptions}
         defaultOptions={false} // Don't load anything until they type
-        onChange={(selectedOption) => onSelect(selectedOption.fundData)}
-        placeholder="Type to search (e.g. Parag Parikh)..."
+        onChange={(selectedOption) => {
+            // console.log(`selectedOption: ${JSON.stringify(selectedOption.fundData)}`);
+            onSelect(selectedOption.fundData)
+        }}
+        placeholder="Type to search"
         styles={customStyles}
         noOptionsMessage={({ inputValue }) => 
           inputValue.length < 3 ? "Type 3+ characters..." : "No funds found"
