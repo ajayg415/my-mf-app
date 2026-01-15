@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+   themes: light --default, dark --prefersdark, corporate;
+}
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -15,4 +18,5 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
+  background-color: #f1f2f4;
 }
