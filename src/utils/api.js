@@ -42,6 +42,39 @@ export const searchFunds = async (searchTerm) => {
 };
 
 
+export const getFundsByName = async (partialName) => {
+  if (!partialName) return [];
+
+  const searchTerms = partialName.toLowerCase().split(" "); // Split "Axis Bluechip" -> ["axis", "bluechip"]
+  const fundsRef = collection(db, "funds");
+
+  // Note: Firestore can only handle one 'array-contains' per query.
+  // We search for the FIRST word, then filter the rest in Javascript (Client-side)
+  const q = query(
+    fundsRef, 
+    where("keywords", "array-contains", searchTerms[0]), 
+    limit(20)
+  );
+
+  try {
+    const snapshot = await getDocs(q);
+    
+    // Client-side filtering for remaining words
+    const funds = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(fund => {
+         // Check if ALL typed words exist in the fund's keyword list
+         return searchTerms.every(term => fund.keywords.includes(term));
+      });
+    console.log({funds});
+    return funds;
+  } catch (error) {
+    console.error("Error fetching funds:", error);
+    return [];
+  }
+};
+
+
 
 export const getLatestNav = async (schemeCode) => {
   try {

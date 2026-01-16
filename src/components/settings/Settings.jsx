@@ -1,10 +1,16 @@
 import { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { wipeUserData } from "../../store/mf/mfSlice.js";
+import { wipeUserData, setUserData } from "../../store/mf/mfSlice.js";
 import { ChevronRight, User } from "lucide-react";
 
+import { isValidData, formatFundData } from "../../utils/fundCompution.js";
+
 const Settings = () => {
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    toastClass: "",
+  });
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
 
@@ -38,10 +44,19 @@ const Settings = () => {
     reader.onload = (e) => {
       try {
         const json = JSON.parse(e.target.result);
-        if (!json.funds) throw new Error("Invalid backup file");
+        if (!json) {
+            showToast("Invalid backup file", "error");
+            return;
+        }
+        if (!isValidData(json)) {
+          showToast("Invalid data in backup file", "error");
+          return;
+        }
 
-        // dispatch(setUserData(json));
-        alert("Data restored successfully!");
+        const formattedData = formatFundData(json);
+        console.log(`formattedData`, JSON.stringify(formattedData));
+        // dispatch(setUserData({  name, funds: formattedData }));
+        showToast("Data restored successfully!", "success");
       } catch (error) {
         alert("Failed to restore: " + error.message);
       }
@@ -61,8 +76,16 @@ const Settings = () => {
   const confirmWipe = () => {
     dispatch(wipeUserData());
     closeModal();
-    setToast({ show: true, message: "All user data wiped successfully!" });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+    showToast("All user data wiped successfully!", "success");
+  };
+
+  const showToast = (message, type) => {
+    const toastClass = type === "success" ? "alert-success" : "alert-error";
+    setToast({ show: true, message, toastClass });
+    setTimeout(
+      () => setToast({ show: false, message: "", toastClass: "" }),
+      3000
+    );
   };
 
   return (
@@ -140,10 +163,7 @@ const Settings = () => {
             backup before proceeding.
           </p>
           <div className="modal-buttons flex justify-center gap-4">
-            <button
-              className="btn btn-soft btn-primary"
-              onClick={confirmWipe}
-            >
+            <button className="btn btn-soft btn-primary" onClick={confirmWipe}>
               Confirm
             </button>
             <button className="btn btn-soft btn-error" onClick={closeModal}>
@@ -154,8 +174,8 @@ const Settings = () => {
       </dialog>
 
       {toast.show && (
-        <div className="toast toast-end" style={{ bottom: '75px'}}>
-          <div className="alert alert-success">
+        <div className="toast toast-end" style={{ bottom: "75px" }}>
+          <div className={`alert ${toast.toastClass}`}>
             <span>{toast.message}</span>
           </div>
         </div>

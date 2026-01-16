@@ -1,5 +1,5 @@
 import { store } from "../store/store";
-
+import { getFundsByName } from "./api.js";
 import { updateAllFunds } from "../store/mf/mfSlice.js";
 
 export const calculateFundValue = (units, nav) => {
@@ -43,3 +43,22 @@ export const computeFundMetrics = ({ nav, code }) => {
   });
   store.dispatch(updateAllFunds(updatedFunds));
 };
+
+
+export const isValidData = (data) => {
+  const requiredKeys = ["schemeName", "units", "costValue"];
+  data.forEach((fund) => {
+    requiredKeys.forEach((key) => {
+      if (!fund[key]) return false;
+    });
+  });
+  return true;
+}
+
+export const formatFundData = (data) => {
+  return data.map(fund => ({
+    key: fund.key ?? new Date().getTime(),
+    code: fund.code ?? getFundsByName(fund.schemeName).then(results => results.length > 0 ? results[0].id : null),
+    ...fund,
+  }));
+}

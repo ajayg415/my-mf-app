@@ -186,8 +186,20 @@ const AddFund = ({ fundDetails = {} }) => {
 
             {!fundCode && (
               <div className="p-4">
-                <FundSelect onSelect={setSelectedFund} />
-                {selectedFund.name &&
+                <FundSelect
+                  onSelect={(fund) => {
+                    setSelectedFund({
+                      ...fund,
+                      key: new Date().getTime(),
+                      schemeName: fund.name,
+                      units: "",
+                      folio: "",
+                      costValue: "",
+                      isFavorite: false,
+                    });
+                  }}
+                />
+                {selectedFund?.name &&
                   selectedFund.isin &&
                   selectedFund.code && (
                     <div className="mt-6 p-4 bg-base-200 rounded-xl">
