@@ -55,7 +55,6 @@ A privacy-focused, local-first personal finance application to track Mutual Fund
    npm run build
    ```
 
-
 # 🗺️ Roadmap & Pending Tasks
 
 We are actively working on v2.0. The following features are currently in development:
@@ -86,6 +85,14 @@ We are actively working on v2.0. The following features are currently in develop
   * Purchase Date (crucial for accurate XIRR).
   * Units/NAV (in case of manual entry errors).
   * Folio Numbers.
+
+### 6. 📊 Advanced Sorting & Filtering
+* **Sort:** Add options to sort the Holdings list by *Current Value*, *Total Profit*, *Day Change*, or *Alphabetical Name*.
+* **Filter:** Allow filtering funds by *Equity/Debt* category or specific *AMC* (Asset Management Company).
+
+### 7. 📱 PWA & Smart Notifications
+* **PWA Support:** Convert the app into a fully installable **Progressive Web App** (install on Home Screen).
+* **Daily Alerts:** Enable local Push Notifications to trigger at 9:00 AM, alerting the user about the overall portfolio movement (Up/Down) based on the latest NAV data.
 
 # 🤝 Contributing to MyMF Portfolio
 
