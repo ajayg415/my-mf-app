@@ -89,3 +89,25 @@ export const formatFundData = async (data) => {
 
   return formattedData;
 };
+
+export const computeFundsSummary = (funds) => {
+  return funds.reduce(
+    (summary, fund) => {
+      summary.totalCostValue += parseFloat(fund.costValue);
+      summary.totalCurrentMktValue += fund.currentMktValue;
+      summary.totalGainLoss += fund.gainLoss;
+      summary.totalGainLossPercentage = calculateProfitLossPercentage(
+        summary.totalGainLoss,
+        summary.totalCostValue
+      );
+      return summary;
+    },
+    {
+      totalUnits: 0,
+      totalCostValue: 0,
+      totalCurrentMktValue: 0,
+      totalGainLoss: 0,
+      totalGainLossPercentage: 0
+    }
+  );
+};

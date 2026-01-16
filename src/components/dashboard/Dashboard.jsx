@@ -1,18 +1,98 @@
+import { useMemo } from "react"; // 1. Import useMemo
 import { useSelector } from "react-redux";
+import { computeFundsSummary } from "../../utils/fundCompution"; 
+import { TrendingUp, TrendingDown, Wallet, PieChart } from "lucide-react";
 
 const Dashboard = () => {
   const userData = useSelector((state) => state.mf.userData);
 
+  // 2. FIX: Use useMemo instead of useState + useEffect
+  // This calculates the summary instantly whenever userData changes, without triggering a re-render.
+  const summary = useMemo(() => {
+    if (userData?.funds && userData.funds.length > 0) {
+      return computeFundsSummary(userData.funds);
+    }
+    // Return default/zero values if no data exists
+    return {
+      totalCostValue: 0,
+      totalCurrentMktValue: 0,
+      totalGainLoss: 0,
+      totalGainLossPercentage: 0,
+      totalUnits: 0,
+    };
+  }, [userData]); // Dependency: Only re-run if userData changes
+
+  // Helper: Currency Formatter
+  const formatMoney = (amount) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount || 0);
+  };
+
+  const isProfit = summary.totalGainLoss >= 0;
 
   return (
-    <section className="dashboard-section">
-      { userData && (
-        <div className="mockup-code p-4 rounded-xl overflow-x-auto">
-          <pre>
-            <code>{JSON.stringify(userData, null, 2)}</code>
-          </pre>
+    <section className="dashboard-section w-full">
+      
+      {/* THE HOVERABLE CARD */}
+      <div className="card w-full bg-base-100 shadow-xl border border-base-200 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-default">
+        <div className="card-body p-6">
+          
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+              <PieChart size={20} />
+            </div>
+            <h2 className="card-title text-base text-gray-500 uppercase tracking-wide">
+              Portfolio Value
+            </h2>
+          </div>
+
+          {/* Main Big Number */}
+          <div className="mb-6">
+            <h1 className="text-4xl font-extrabold text-base-content">
+              {formatMoney(summary.totalCurrentMktValue)}
+            </h1>
+            <div className={`flex items-center gap-1 mt-1 text-sm font-bold ${isProfit ? "text-success" : "text-error"}`}>
+              {isProfit ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+              <span>
+                {isProfit ? "+" : ""}
+                {formatMoney(summary.totalGainLoss)} ({summary.totalGainLossPercentage.toFixed(2)}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="divider my-0"></div>
+
+          {/* Secondary Stats Grid */}
+          <div className="grid grid-cols-2 gap-4 mt-2">
+            
+            {/* Invested Amount */}
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-400 flex items-center gap-1">
+                <Wallet size={12} /> Invested
+              </span>
+              <span className="text-lg font-semibold text-base-content">
+                {formatMoney(summary.totalCostValue)}
+              </span>
+            </div>
+
+            {/* Total Units */}
+            <div className="flex flex-col text-right">
+              <span className="text-xs text-gray-400">Total Units</span>
+              <span className="text-lg font-semibold text-base-content">
+                {summary.totalUnits?.toFixed(2) || "0.00"}
+              </span>
+            </div>
+
+          </div>
+
         </div>
-      )}
+      </div>
+
     </section>
   );
 };

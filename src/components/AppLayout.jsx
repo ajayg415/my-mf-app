@@ -19,7 +19,7 @@ const MainLayout = () => {
     <section className="w-full h-screen flex flex-col bg-base-200 overflow-hidden">
       
       {/* 2. Header: 'shrink-0' ensures it never collapses. removed 'fixed' */}
-      <div className="shrink-0 z-50 bg-base-100 shadow-sm h-16 flex items-center px-4 transition-all duration-200">
+      <div className="shrink-0 z-50 bg-base-100 shadow-sm h-12 flex items-center px-4 transition-all duration-200">
         <div className="flex-1">
           <h1 className="text-xl font-bold text-primary capitalize">
             {getPageTitle(location.pathname)}
