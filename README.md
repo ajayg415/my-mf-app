@@ -44,8 +44,7 @@ A privacy-focused, local-first personal finance application to track Mutual Fund
    VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
    VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
    VITE_FIREBASE_APP_ID=your_app_id
-  ```
-
+   ```
 4. **Start the Development Server**
    ```bash
    npm run dev
@@ -54,4 +53,36 @@ A privacy-focused, local-first personal finance application to track Mutual Fund
 5. **Build for Production**
    ```bash
    npm run build
-  ```
+   ```
+
+
+# 🗺️ Roadmap & Pending Tasks
+
+We are actively working on v2.0. The following features are currently in development:
+
+### 1. 🗄️ Robust Storage (IndexedDB)
+* **Current:** Data is stored in `localStorage`, which has size limits (5MB) and is synchronous.
+* **Plan:** Migrate to **IndexedDB** (using `idb` or `Dexie.js`) to handle larger datasets, improve performance, and ensure data persistence across browser sessions more reliably.
+
+### 2. 🏗️ Architecture Revamp
+* Refactor the current utility-heavy logic into **Custom React Hooks** (e.g., `useFundSearch`, `usePortfolioCalculations`) for better separation of concerns.
+* Implement a cleaner Service Layer for API calls to decouple fetching logic from UI components.
+
+### 3. 👆 Interactive Holdings View
+* **Click-to-View:** Enable clicking on a Fund Card in the "Holdings" tab.
+* **Details Screen:** Open a dedicated view showing:
+  * Transaction History (SIPs/Lumpsums).
+  * XIRR (Extended Internal Rate of Return) calculation.
+  * Historical NAV Chart.
+
+### 4. ⭐ Favorites & Watchlist
+* Complete the "Favourites" tab logic.
+* Allow users to "Star" funds they are tracking but haven't purchased yet.
+* Show daily price movements for watchlisted funds.
+
+### 5. ✏️ Edit Functionality
+* Add an **"Edit Transaction"** feature to the fund card.
+* Allow users to modify:
+  * Purchase Date (crucial for accurate XIRR).
+  * Units/NAV (in case of manual entry errors).
+  * Folio Numbers.
