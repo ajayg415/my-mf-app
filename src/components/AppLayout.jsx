@@ -3,7 +3,7 @@ import BottomNav from "./BottomNav";
 
 const MainLayout = () => {
   return (
-    <section className="w-full min-h-screen pl-8 pr-8 pt-4 box-border">
+    <section className="w-full min-h-screen box-border">
       <Outlet />
       <BottomNav />
     </section>

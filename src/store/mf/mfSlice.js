@@ -3,7 +3,7 @@ import { saveUserData } from "../../utils/storage.js";
 
 const initialState = {
   userData: {
-    name: "User",
+    name: "MF User",
     funds: [],
   },
   data: "",
@@ -61,11 +61,15 @@ const mfSlice = createSlice({
     updateAllFunds(state, action) {
       state.userData.funds = action.payload;
       saveUserData(state.userData);
+    },
+    wipeUserData(state) {
+      state.userData = initialState.userData;
+      saveUserData(state.userData);
     }
   },
 });
 
-export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds } =
+export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds, wipeUserData } =
   mfSlice.actions;
 
 export default mfSlice.reducer;
