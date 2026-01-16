@@ -4,6 +4,7 @@ import { wipeUserData, setUserData } from "../../store/mf/mfSlice.js";
 import { ChevronRight, User } from "lucide-react";
 
 import { isValidData, formatFundData } from "../../utils/fundCompution.js";
+import { getLatestNav } from "../../utils/api.js";
 
 const Settings = () => {
   const [toast, setToast] = useState({
@@ -41,7 +42,7 @@ const Settings = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const json = JSON.parse(e.target.result);
         if (!json) {
@@ -53,10 +54,13 @@ const Settings = () => {
           return;
         }
 
-        const formattedData = formatFundData(json);
-        console.log(`formattedData`, JSON.stringify(formattedData));
-        // dispatch(setUserData({  name, funds: formattedData }));
-        showToast("Data restored successfully!", "success");
+        const formattedData = await formatFundData(json);
+        await dispatch(setUserData({  name, funds: formattedData }));
+        await showToast("Data restored successfully!", "success");
+        formattedData.forEach((fund) => {
+          // Fetch latest NAV for each fund
+          getLatestNav(fund.code);
+        });
       } catch (error) {
         alert("Failed to restore: " + error.message);
       }
@@ -91,8 +95,6 @@ const Settings = () => {
   return (
     <>
       <div className="min-h-screen">
-        <h1 className="text-3xl font-bold mb-6 px-1">Settings</h1>
-
         <div className="space-y-4">
           {/* 1. Profile Card */}
           <div className="text-white bg-gray-800 rounded-2xl p-4 flex items-center justify-between active:scale-95 transition-transform cursor-pointer">

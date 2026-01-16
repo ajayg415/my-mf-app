@@ -2,9 +2,9 @@ import React from "react";
 
 const Favourite = () => {
     return (
-        <div> 
+        <section className="favourite-section">
             <h1>Welcome to the Favourite</h1>
-        </div>
+        </section>
     );
 };
 export default Favourite;

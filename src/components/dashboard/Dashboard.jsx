@@ -5,8 +5,7 @@ const Dashboard = () => {
 
 
   return (
-    <div>
-      <h1>Welcome to the Dashboard</h1>
+    <section className="dashboard-section">
       { userData && (
         <div className="mockup-code p-4 rounded-xl overflow-x-auto">
           <pre>
@@ -14,7 +13,7 @@ const Dashboard = () => {
           </pre>
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

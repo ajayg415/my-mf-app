@@ -1,5 +1,5 @@
 import { store } from "../store/store";
-import { getFundsByName } from "./api.js";
+import { getFundByISIN } from "./api.js";
 import { updateAllFunds } from "../store/mf/mfSlice.js";
 
 export const calculateFundValue = (units, nav) => {
@@ -46,7 +46,7 @@ export const computeFundMetrics = ({ nav, code }) => {
 
 
 export const isValidData = (data) => {
-  const requiredKeys = ["schemeName", "units", "costValue"];
+  const requiredKeys = ["schemeName", "units", "costValue", "isin"];
   data.forEach((fund) => {
     requiredKeys.forEach((key) => {
       if (!fund[key]) return false;
@@ -55,10 +55,37 @@ export const isValidData = (data) => {
   return true;
 }
 
-export const formatFundData = (data) => {
-  return data.map(fund => ({
-    key: fund.key ?? new Date().getTime(),
-    code: fund.code ?? getFundsByName(fund.schemeName).then(results => results.length > 0 ? results[0].id : null),
-    ...fund,
-  }));
-}
+export const formatFundData = async (data) => {
+  // 1. Use Promise.all to wait for all inner async maps to finish
+  const formattedData = await Promise.all(
+    data.map(async (fund) => {
+      
+      let schemeCode = fund.code;
+      let fetchedDetails = null;
+
+      // 2. Only hit the DB if we are MISSING the code but HAVE the ISIN
+      if (!schemeCode && fund.isin) {
+        try {
+          fetchedDetails = await getFundByISIN(fund.isin);
+          if (fetchedDetails) {
+            schemeCode = fetchedDetails.id; // Or fetchedDetails.code
+          }
+        } catch (err) {
+          console.error(`Failed to fetch code for ISIN ${fund.isin}`, err);
+        }
+      }
+
+      // 3. Return the clean object
+      return {
+        ...fund,
+        // Use a better unique key strategy (Timestamp + Random) to avoid collision in loops
+        key: fund.key ?? `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        code: schemeCode,
+        // Optional: fill in name if missing and we just fetched it
+        name: fund.name ?? fetchedDetails?.name ?? "Unknown Fund"
+      };
+    })
+  );
+
+  return formattedData;
+};
