@@ -86,3 +86,49 @@ We are actively working on v2.0. The following features are currently in develop
   * Purchase Date (crucial for accurate XIRR).
   * Units/NAV (in case of manual entry errors).
   * Folio Numbers.
+
+# 🤝 Contributing to MyMF Portfolio
+
+First off, thanks for taking the time to contribute! We welcome contributions from the community to help make this local-first wealth tracker better for everyone.
+
+## How Can I Contribute?
+
+### 🐛 Reporting Bugs
+This section guides you through submitting a bug report.
+* **Use a clear and descriptive title** for the issue to identify the problem.
+* **Describe the exact steps to reproduce the problem** in as much detail as possible.
+* **Describe what you expected to happen**, and what actually happened.
+
+### 🌟 Suggesting Enhancements
+This section guides you through submitting an enhancement suggestion, including completely new features and minor improvements to existing functionality.
+* **Use a clear and descriptive title** for the issue.
+* **Provide a step-by-step description of the suggested enhancement** in as much detail as possible.
+* **Explain why this enhancement would be useful** to most users.
+
+### 💻 Pull Requests
+The process is straightforward:
+
+1.  **Fork** the repository on GitHub.
+2.  **Clone** the project to your own machine.
+3.  **Create a new branch** for your feature or fix.
+    ```bash
+    git checkout -b feature/AmazingFeature
+    ```
+4.  **Commit** your changes to your own branch.
+    ```bash
+    git commit -m 'Add some AmazingFeature'
+    ```
+5.  **Push** your work back up to your fork.
+    ```bash
+    git push origin feature/AmazingFeature
+    ```
+6.  **Submit a Pull Request** so that we can review your changes.
+
+## 🎨 Coding Style
+* Use **ES6+** syntax.
+* Follow the existing component structure (`src/components`, `src/store`, `src/utils`).
+* Ensure **DaisyUI** class names are used for styling where possible to maintain consistency.
+
+## 🧪 Testing
+* Please verify that the app builds without errors (`npm run build`) before submitting your PR.
+* If you add new logic (like XIRR calculation), please add comments explaining the math.
