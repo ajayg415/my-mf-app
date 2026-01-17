@@ -10,7 +10,7 @@ import Settings from './components/settings/Settings.jsx';
 
 import { setUserData } from './store/mf/mfSlice.js';
 import { fetchUserData } from './utils/storage.js';
-import { getLatestNav } from './utils/api.js';
+import { fetchFundDetails } from './utils/api.js';
 
 export default function App() {
 	const dispatch = useDispatch();
@@ -20,7 +20,7 @@ export default function App() {
 		if (userData) {
 			dispatch(setUserData(userData));
 			userData.funds.forEach(fund => {
-				getLatestNav(fund.code);
+				fetchFundDetails(fund.code);
 			})
 		}
 	}, []);

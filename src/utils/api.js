@@ -2,6 +2,7 @@ import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import axios from "axios";
 import { computeFundMetrics } from "./fundCompution.js";
 
+import { getCachedFund, cacheFundResponse } from "../services/db";
 import { db } from "../config/firebase";
 
 // API Endpoint for MFAPI.in
@@ -77,16 +78,75 @@ export const getFundByISIN = async (isin) => {
   }
 };
 
-export const getLatestNav = async (schemeCode) => {
-  try {
-    const response = await axios.get(`${MF_NAV_URL}/${schemeCode}`);
-    if (response.data && response.data.data && response.data.data.length > 0) {
-      computeFundMetrics({
-        code: schemeCode,
-        nav: parseFloat(response.data.data[0].nav),
-      });
+/**
+ * Smart Fetch:
+ * 1. Checks DB for data synced 'Today'.
+ * 2. If missing or stale, fetches from API.
+ * 3. Stores only the last 30 days of history to save space.
+ */
+export const fetchFundDetails = async (schemeCode, forceRefresh = false) => {
+  if (!schemeCode) return null;
+
+  const todayStr = new Date().toDateString();
+
+  if (!forceRefresh) {
+    try {
+      const cachedData = await getCachedFund(schemeCode);
+
+      if (cachedData) {
+        if (cachedData.meta?.lastSync === todayStr) {
+          console.log(`[Cache Hit] ${schemeCode} is up-to-date (Synced: ${todayStr})`);
+          if (cachedData.data && cachedData.data.length > 0) {
+             computeFundMetrics({
+               code: schemeCode,
+               data: cachedData.data, 
+             });
+          }
+          return cachedData;
+        }
+      }
+    } catch (err) {
+      console.warn("Error reading cache, proceeding to fetch", err);
     }
+  }
+
+  try {
+    console.log(`[API Call] Fetching ${schemeCode}...`);
+    const response = await axios.get(`https://api.mfapi.in/mf/${schemeCode}`);
+    const apiResponse = response.data;
+
+    if (apiResponse && apiResponse.meta && apiResponse.data) {
+
+      const optimizedData = {
+        meta: {
+          ...apiResponse.meta,
+          lastSync: todayStr,
+        },
+        data: apiResponse.data.slice(0, 30), 
+      };
+
+      if (apiResponse.data.length > 0) {
+        computeFundMetrics({
+          code: schemeCode,
+          data: apiResponse.data,
+        });
+      }
+
+      await cacheFundResponse(schemeCode, optimizedData);
+      
+      return optimizedData;
+    }
+    return null;
+
   } catch (error) {
-    console.error(`Failed to fetch NAV for ${schemeCode}`, error);
+    console.error(`Failed to fetch fund ${schemeCode}:`, error);
+
+    const oldCache = await getCachedFund(schemeCode);
+    if (oldCache) {
+      console.warn(`[Offline Fallback] Returning stale data for ${schemeCode}`);
+      return oldCache;
+    }
+
+    return null;
   }
 };

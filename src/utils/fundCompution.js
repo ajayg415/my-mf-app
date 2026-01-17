@@ -15,35 +15,74 @@ export const calculateProfitLossPercentage = (gainLoss, costValue) => {
   return (gainLoss / parseFloat(costValue)) * 100;
 };
 
-export const computeFundMetrics = ({ nav, code }) => {
+export const computeFundMetrics = ({ data, code }) => {
   const state = store.getState();
   const funds = state.mf?.userData?.funds || [];
 
+  // Helper to safely get NAV at a specific index
+  const getNav = (index) => (data[index] ? parseFloat(data[index].nav) : null);
+
+  const todayNav = getNav(0) || 0;
+  const prevNav = getNav(1); // 1 Day ago
+  const weekNav = getNav(5); // 1 Week ago (~5 trading days)
+  const monthNav = getNav(21); // 1 Month ago (~21 trading days)
+
   const updatedFunds = funds.map((fund) => {
     if (fund.code === code) {
+      const currentVal = calculateFundValue(fund.units, todayNav);
+
       return {
         ...fund,
-        nav,
-        currentMktValue: calculateFundValue(fund.units, nav),
-        gainLoss: calculateProfitLoss(
-          calculateFundValue(fund.units, nav),
-          fund.costValue
-        ),
+        nav: todayNav,
+        currentMktValue: currentVal,
+
+        // --- Total P&L (Overall) ---
+        gainLoss: calculateProfitLoss(currentVal, fund.costValue),
         gainLossPercentage: calculateProfitLossPercentage(
-          calculateProfitLoss(
-            calculateFundValue(fund.units, nav),
-            fund.costValue
-          ),
+          calculateProfitLoss(currentVal, fund.costValue),
           fund.costValue
         ),
+
+        // --- 1 Day Change ---
+        dayChange: prevNav
+          ? calculateProfitLoss(
+              currentVal,
+              calculateFundValue(fund.units, prevNav)
+            )
+          : 0,
+        dayChangePercentage: prevNav
+          ? ((todayNav - prevNav) / prevNav) * 100
+          : 0,
+
+        // --- 1 Week Change ---
+        weekChange: weekNav
+          ? calculateProfitLoss(
+              currentVal,
+              calculateFundValue(fund.units, weekNav)
+            )
+          : 0,
+        weekChangePercentage: weekNav
+          ? ((todayNav - weekNav) / weekNav) * 100
+          : 0,
+
+        // --- 1 Month Change ---
+        monthChange: monthNav
+          ? calculateProfitLoss(
+              currentVal,
+              calculateFundValue(fund.units, monthNav)
+            )
+          : 0,
+        monthChangePercentage: monthNav
+          ? ((todayNav - monthNav) / monthNav) * 100
+          : 0,
       };
     } else {
       return fund;
     }
   });
+
   store.dispatch(updateAllFunds(updatedFunds));
 };
-
 
 export const isValidData = (data) => {
   const requiredKeys = ["schemeName", "units", "costValue", "isin"];
@@ -53,13 +92,12 @@ export const isValidData = (data) => {
     });
   });
   return true;
-}
+};
 
 export const formatFundData = async (data) => {
   // 1. Use Promise.all to wait for all inner async maps to finish
   const formattedData = await Promise.all(
     data.map(async (fund) => {
-      
       let schemeCode = fund.code;
       let fetchedDetails = null;
 
@@ -79,10 +117,12 @@ export const formatFundData = async (data) => {
       return {
         ...fund,
         // Use a better unique key strategy (Timestamp + Random) to avoid collision in loops
-        key: fund.key ?? `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        key:
+          fund.key ??
+          `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         code: schemeCode,
         // Optional: fill in name if missing and we just fetched it
-        name: fund.name ?? fetchedDetails?.name ?? "Unknown Fund"
+        name: fund.name ?? fetchedDetails?.name ?? "Unknown Fund",
       };
     })
   );
@@ -107,7 +147,7 @@ export const computeFundsSummary = (funds) => {
       totalCostValue: 0,
       totalCurrentMktValue: 0,
       totalGainLoss: 0,
-      totalGainLossPercentage: 0
+      totalGainLossPercentage: 0,
     }
   );
 };

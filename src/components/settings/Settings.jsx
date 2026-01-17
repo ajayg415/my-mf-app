@@ -4,7 +4,7 @@ import { wipeUserData, setUserData } from "../../store/mf/mfSlice.js";
 import { ChevronRight, User } from "lucide-react";
 
 import { isValidData, formatFundData } from "../../utils/fundCompution.js";
-import { getLatestNav } from "../../utils/api.js";
+import { fetchFundDetails } from "../../utils/api.js";
 
 const Settings = () => {
   const [toast, setToast] = useState({
@@ -59,7 +59,7 @@ const Settings = () => {
         await showToast("Data restored successfully!", "success");
         formattedData.forEach((fund) => {
           // Fetch latest NAV for each fund
-          getLatestNav(fund.code);
+          fetchFundDetails(fund.code);
         });
       } catch (error) {
         alert("Failed to restore: " + error.message);
