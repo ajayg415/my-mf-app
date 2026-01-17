@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route } from 'react-router';
 import { useDispatch } from "react-redux";
 
-import AppLayout from './components/AppLayout.jsx';
+import MainLayout from './components/MainLayout.jsx';
 import Dashboard from './components/dashboard/Dashboard.jsx';
 import Holdings from './components/holdings/Holdings.jsx';
 import Favourite from './components/favourite/Favourite.jsx';
@@ -27,7 +27,7 @@ export default function App() {
 
 	return (
 		<Routes>
-			<Route element={<AppLayout />}>
+			<Route element={<MainLayout />}>
 				<Route path="/" element={<Dashboard />} />
 				<Route path="/dashboard" element={<Dashboard />} />
 				<Route path="/holdings" element={<Holdings />} />

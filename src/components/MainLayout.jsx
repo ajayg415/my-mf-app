@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router";
 import BottomNav from "./BottomNav";
+import ReloadPrompt from "./ReloadPrompt";
 
 const MainLayout = () => {
   const location = useLocation();
@@ -15,10 +16,10 @@ const MainLayout = () => {
   };
 
   return (
-    // 1. Parent: h-screen (Fixed height), flex-col, overflow-hidden (Stops browser scroll)
-    <section className="w-full h-screen flex flex-col bg-base-200 overflow-hidden">
+    // Parent: h-screen (Fixed height), flex-col, overflow-hidden
+    <section className="w-full h-screen flex flex-col bg-base-200 overflow-hidden relative">
       
-      {/* 2. Header: 'shrink-0' ensures it never collapses. removed 'fixed' */}
+      {/* Header */}
       <div className="shrink-0 z-50 bg-base-100 shadow-sm h-12 flex items-center px-4 transition-all duration-200">
         <div className="flex-1">
           <h1 className="text-xl font-bold text-primary capitalize">
@@ -27,13 +28,15 @@ const MainLayout = () => {
         </div>
       </div>
 
-      {/* 3. Content: 'flex-1' fills remaining space. 'overflow-y-auto' adds internal scrollbar */}
-      {/* Removed pt-20/pb-24 because items stack naturally now */}
+      {/* Main Content */}
       <div className="flex-1 overflow-y-auto p-4 container mx-auto">
         <Outlet />
       </div>
 
-      {/* 4. Bottom Nav: 'shrink-0' keeps it fixed at the bottom of the flex column */}
+      {/* 2. PWA Update Prompt: Added here so it's visible on all screens */}
+      <ReloadPrompt />
+
+      {/* Bottom Nav */}
       <div className="shrink-0">
         <BottomNav />
       </div>
