@@ -59,40 +59,48 @@ A privacy-focused, local-first personal finance application to track Mutual Fund
 
 We are actively working on v2.0. The following features are currently in development:
 
-### 1. 🗄️ Robust Storage (IndexedDB)
-* **Current:** Data is stored in `localStorage`, which has size limits (5MB) and is synchronous.
-* **Plan:** Migrate to **IndexedDB** (using `idb` or `Dexie.js`) to handle larger datasets, improve performance, and ensure data persistence across browser sessions more reliably.
-
-### 2. 🏗️ Architecture Revamp
+### 1. 🏗️ Architecture Revamp
 * Refactor the current utility-heavy logic into **Custom React Hooks** (e.g., `useFundSearch`, `usePortfolioCalculations`) for better separation of concerns.
 * Implement a cleaner Service Layer for API calls to decouple fetching logic from UI components.
 
-### 3. 👆 Interactive Holdings View
+### 2. 👆 Interactive Holdings View
 * **Click-to-View:** Enable clicking on a Fund Card in the "Holdings" tab.
 * **Details Screen:** Open a dedicated view showing:
   * Transaction History (SIPs/Lumpsums).
   * XIRR (Extended Internal Rate of Return) calculation.
   * Historical NAV Chart.
 
-### 4. ⭐ Favorites & Watchlist
-* Complete the "Favourites" tab logic.
-* Allow users to "Star" funds they are tracking but haven't purchased yet.
-* Show daily price movements for watchlisted funds.
-
-### 5. ✏️ Edit Functionality
+### 3. ✏️ Edit Functionality
 * Add an **"Edit Transaction"** feature to the fund card.
 * Allow users to modify:
   * Purchase Date (crucial for accurate XIRR).
   * Units/NAV (in case of manual entry errors).
   * Folio Numbers.
 
-### 6. 📊 Advanced Sorting & Filtering
-* **Sort:** Add options to sort the Holdings list by *Current Value*, *Total Profit*, *Day Change*, or *Alphabetical Name*.
+### 4. 📊 Filtering
 * **Filter:** Allow filtering funds by *Equity/Debt* category or specific *AMC* (Asset Management Company).
 
-### 7. 📱 PWA & Smart Notifications
-* **PWA Support:** Convert the app into a fully installable **Progressive Web App** (install on Home Screen).
+### 5. 🎨 Revamped Fund Card
+* **Enhanced Design:** Modernize the fund card UI with better visual hierarchy.
+* **Quick Actions:** Add inline actions like "Edit", "Delete", and "View Details".
+* **Visual Indicators:** Show fund category badges (Equity/Debt) and AMC logos.
+* **Performance Metrics:** Display fund performance metrics at a glance (1D, 1W, 1M changes).
+
+### 6. 📊 Dashboard Enhancements with Graphs
+* **NAV Chart:** Add interactive line/area charts showing historical NAV movements.
+* **Portfolio Breakdown:** Visualize portfolio allocation by fund category (Equity/Debt).
+* **Performance Timeline:** Show portfolio value trends over time (1W, 1M, 3M, 1Y).
+* **Chart Library:** Integrate **Chart.js** or **Recharts** for responsive, interactive visualizations.
+
+### 7. 📁 Group & Organize Data
+* **Group by AMC:** Organize funds by Asset Management Company.
+* **Group by Category:** Display funds grouped by type (Equity, Debt, Hybrid).
+* **Custom Tags:** Allow users to create custom groups/tags for funds.
+* **Dashboard Summaries:** Show aggregated metrics per group in the dashboard.
+
+### 8. 📱 Smart Notifications
 * **Daily Alerts:** Enable local Push Notifications to trigger at 9:00 AM, alerting the user about the overall portfolio movement (Up/Down) based on the latest NAV data.
+
 
 # 🤝 Contributing to MyMF Portfolio
 
