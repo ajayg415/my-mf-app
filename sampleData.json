@@ -1,0 +1,172 @@
+[
+    {
+        "isin": "INF209K01108",
+        "name": "Aditya Birla Sun Life ELSS Tax Saver Fund- (ELSS U/S 80C of IT ACT) - Growth-Regular Plan",
+        "schemeName": "Aditya Birla Sun Life ELSS Tax Saver Fund- (ELSS U/S 80C of IT ACT) - Growth-Regular Plan",
+        "key": 1768636345881,
+        "folio": "1036742232",
+        "units": "0.00",
+        "costValue": "0.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF740K01128",
+        "name": "DSP Mid Cap Fund - Regular Plan - Growth",
+        "schemeName": "DSP Mid Cap Fund - Regular Plan - Growth",
+        "key": 1768636345881,
+        "folio": "8106057",
+        "units": "0.00",
+        "costValue": "0.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF740K01NY4",
+        "name": "DSP Aggressive Hybrid Fund - Direct Plan - Growth",
+        "schemeName": "DSP Aggressive Hybrid Fund - Direct Plan - Growth",
+        "key": 1768636345881,
+        "folio": "5178728",
+        "units": "102.97",
+        "costValue": "32000.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF174K01KT2",
+        "name": "Kotak Small Cap Fund - Direct Plan - Growth",
+        "schemeName": "Kotak Small Cap Fund - Direct Plan - Growth",
+        "key": 1768636345881,
+        "folio": "14633597",
+        "units": "0.00",
+        "costValue": "0.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF174K01369",
+        "name": "Kotak ELSS Tax Saver Fund - Growth (Regular Plan)",
+        "schemeName": "Kotak ELSS Tax Saver Fund - Growth (Regular Plan)",
+        "key": 1768636345881,
+        "folio": "11546364",
+        "units": "0.00",
+        "costValue": "0.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF917K01254",
+        "name": "HSBC Midcap Fund - Regular Growth (Formerly known as L&T Midcap Fund - Growth )",
+        "schemeName": "HSBC Midcap Fund - Regular Growth (Formerly known as L&T Midcap Fund - Growth )",
+        "key": 1768636345881,
+        "folio": "5234804",
+        "units": "382.36",
+        "costValue": "72000.00",
+        "isFavorite": true
+    },
+    {
+        "isin": "INF109KC1GE9",
+        "name": "ICICI Prudential Pharma Healthcare and Diagnostics (P.H.D) Fund Growth",
+        "schemeName": "ICICI Prudential Pharma Healthcare and Diagnostics (P.H.D) Fund Growth",
+        "key": 1768636345881,
+        "folio": "38809779",
+        "units": "1130.09",
+        "costValue": "45000.00",
+        "isFavorite": true
+    },
+    {
+        "isin": "INF879O01019",
+        "name": "Parag Parikh Flexi Cap Fund - Regular Plan Growth",
+        "schemeName": "Parag Parikh Flexi Cap Fund - Regular Plan Growth",
+        "key": 1768636345881,
+        "folio": "17051580",
+        "units": "633.64",
+        "costValue": "54000.00",
+        "isFavorite": false
+    },
+    {
+        "isin": "INF769K01AX2",
+        "name": "Mirae Asset Large Cap Fund - Direct Plan",
+        "schemeName": "Mirae Asset Large Cap Fund - Direct Plan",
+        "key": 1768636345881,
+        "folio": "79916675303",
+        "units": 468.169,
+        "costValue": 47997.76,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF846K01CH7",
+        "name": "Axis Focused Fund - Regular Growth",
+        "schemeName": "Axis Focused Fund - Regular Growth",
+        "key": 1768636345881,
+        "folio": "91037466275",
+        "units": 0,
+        "costValue": 0,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF846K01164",
+        "name": "Axis Large Cap Fund - Regular Growth",
+        "schemeName": "Axis Large Cap Fund - Regular Growth",
+        "key": 1768636345881,
+        "folio": "91037466275",
+        "units": 0,
+        "costValue": 0,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF846K01131",
+        "name": "Axis ELSS Tax Saver Fund - Regular Growth",
+        "schemeName": "Axis ELSS Tax Saver Fund - Regular Growth",
+        "key": 1768636345881,
+        "folio": "91037466275",
+        "units": 0,
+        "costValue": 0,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF204K01927",
+        "name": "NIPPON INDIA BANKING & FINANCIAL SERVICES FUND - GROWTH PLAN",
+        "schemeName": "NIPPON INDIA BANKING & FINANCIAL SERVICES FUND - GROWTH PLAN",
+        "key": 1768636345881,
+        "folio": "477404519775",
+        "units": 62.211,
+        "costValue": 40000,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF204K01UN9",
+        "name": "NIPPON INDIA LIQUID FUND - GROWTH PLAN - GROWTH OPTION",
+        "schemeName": "NIPPON INDIA LIQUID FUND - GROWTH PLAN - GROWTH OPTION",
+        "key": 1768636345881,
+        "folio": "488186380643",
+        "units": 0,
+        "costValue": 0,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF204K01EV6",
+        "name": "NIPPON INDIA LOW DURATION FUND - GROWTH PLAN GROWTH OPTION",
+        "schemeName": "NIPPON INDIA LOW DURATION FUND - GROWTH PLAN GROWTH OPTION",
+        "key": 1768636345881,
+        "folio": "488186380643",
+        "units": 0,
+        "costValue": 0,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF204K01AQ4",
+        "name": "NIPPON INDIA CONSUMPTION FUND - GROWTH PLAN - GROWTH OPTION",
+        "schemeName": "NIPPON INDIA CONSUMPTION FUND - GROWTH PLAN - GROWTH OPTION",
+        "key": 1768636345881,
+        "folio": "477404519775",
+        "units": 225.859,
+        "costValue": 45000,
+        "isFavorite": false
+    },
+    {
+        "isin": "INF204K01B08",
+        "name": "NIPPON INDIA AGGRESSIVE HYBRID FUND - DIRECT GROWTH PLAN GROWTH OPTION",
+        "schemeName": "NIPPON INDIA AGGRESSIVE HYBRID FUND - DIRECT GROWTH PLAN GROWTH OPTION",
+        "key": 1768636345881,
+        "folio": "499189301491",
+        "units": 341.165,
+        "costValue": 31998.4,
+        "isFavorite": false
+    }
+]
