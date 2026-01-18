@@ -136,6 +136,8 @@ export const computeFundsSummary = (funds) => {
       summary.totalCostValue += parseFloat(fund.costValue);
       summary.totalCurrentMktValue += fund.currentMktValue;
       summary.totalGainLoss += fund.gainLoss;
+      summary.totalDayChange += fund.dayChange || 0;
+      summary.totalWeekChange += fund.weekChange || 0;
       summary.totalGainLossPercentage = calculateProfitLossPercentage(
         summary.totalGainLoss,
         summary.totalCostValue
@@ -143,11 +145,12 @@ export const computeFundsSummary = (funds) => {
       return summary;
     },
     {
-      totalUnits: 0,
       totalCostValue: 0,
       totalCurrentMktValue: 0,
       totalGainLoss: 0,
       totalGainLossPercentage: 0,
+      totalDayChange: 0,
+      totalWeekChange: 0,
     }
   );
 };

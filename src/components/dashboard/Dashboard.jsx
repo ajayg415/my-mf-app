@@ -18,7 +18,8 @@ const Dashboard = () => {
       totalCurrentMktValue: 0,
       totalGainLoss: 0,
       totalGainLossPercentage: 0,
-      totalUnits: 0,
+      totalDayChange: 0,
+      totalWeekChange: 0,
     };
   }, [userData]); // Dependency: Only re-run if userData changes
 
@@ -80,12 +81,27 @@ const Dashboard = () => {
               </span>
             </div>
 
-            {/* Total Units */}
+            {/* Total Change with Sub-values */}
             <div className="flex flex-col text-right">
-              <span className="text-xs text-gray-400">Total Units</span>
-              <span className="text-lg font-semibold text-base-content">
-                {summary.totalUnits?.toFixed(2) || "0.00"}
-              </span>
+              <span className="text-xs text-gray-400 mb-1">Period Changes</span>
+              
+              {/* 1 Day Change - Sub-value */}
+              <div className="flex items-center justify-end gap-1 mb-1">
+                <span className="text-xs font-medium text-gray-500">1D:</span>
+                <span className={`text-xs font-semibold ${summary.totalDayChange >= 0 ? "text-success" : "text-error"}`}>
+                  {summary.totalDayChange >= 0 ? <TrendingUp size={10} className="inline" /> : <TrendingDown size={10} className="inline" />}
+                  {summary.totalDayChange >= 0 ? "+" : ""}{formatMoney(summary.totalDayChange)}
+                </span>
+              </div>
+
+              {/* 1 Week Change - Sub-value */}
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-xs font-medium text-gray-500">1W:</span>
+                <span className={`text-xs font-semibold ${summary.totalWeekChange >= 0 ? "text-success" : "text-error"}`}>
+                  {summary.totalWeekChange >= 0 ? <TrendingUp size={10} className="inline" /> : <TrendingDown size={10} className="inline" />}
+                  {summary.totalWeekChange >= 0 ? "+" : ""}{formatMoney(summary.totalWeekChange)}
+                </span>
+              </div>
             </div>
 
           </div>
