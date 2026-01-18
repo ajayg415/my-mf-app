@@ -94,7 +94,7 @@ const Settings = () => {
 
   return (
     <>
-      <div className="min-h-screen">
+      <div className="settings-section">
         <div className="space-y-4">
           {/* 1. Profile Card */}
           <div className="text-white bg-gray-800 rounded-2xl p-4 flex items-center justify-between active:scale-95 transition-transform cursor-pointer">

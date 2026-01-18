@@ -29,7 +29,7 @@ const MainLayout = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 container mx-auto">
+      <div className="main-content flex-1 overflow-y-auto p-4 container mx-auto" style={{ maxHeight: 'calc(100vh - 3rem - 64px)' }}>
         <Outlet />
       </div>
 
