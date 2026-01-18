@@ -1,6 +1,8 @@
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import axios from "axios";
 import { computeFundMetrics } from "./fundCompution.js";
+import { store } from "../store/store.js";
+import { showToast } from "../store/mf/mfSlice.js";
 
 import { getCachedFund, cacheFundResponse } from "../services/db";
 import { db } from "../config/firebase";
@@ -86,6 +88,9 @@ export const getFundByISIN = async (isin) => {
  */
 export const fetchFundDetails = async (schemeCode, forceRefresh = false) => {
   if (!schemeCode) return null;
+  
+  // Show loading toast
+  store.dispatch(showToast({ message: "Data Updating is in Progress", type: "success" }));
 
   const todayStr = new Date().toDateString();
 
@@ -109,6 +114,7 @@ export const fetchFundDetails = async (schemeCode, forceRefresh = false) => {
       console.warn("Error reading cache, proceeding to fetch", err);
     }
   }
+
 
   try {
     console.log(`[API Call] Fetching ${schemeCode}...`);

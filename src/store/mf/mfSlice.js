@@ -9,6 +9,11 @@ const initialState = {
   data: "",
   loading: false,
   error: null,
+  toast: {
+    show: false,
+    message: "",
+    toastClass: "",
+  },
 };
 
 const mfSlice = createSlice({
@@ -72,8 +77,8 @@ const mfSlice = createSlice({
 
       // Sort the funds array based on the field
       state.userData.funds.sort((a, b) => {
-        const aVal = a[fieldKey];
-        const bVal = b[fieldKey];
+        const aVal = isNaN(a[fieldKey]) ? a[fieldKey] : parseFloat(a[fieldKey]);
+        const bVal = isNaN(b[fieldKey]) ? b[fieldKey] : parseFloat(b[fieldKey]);
 
         // Handle null/undefined values
         if (aVal == null && bVal == null) return 0;
@@ -92,13 +97,29 @@ const mfSlice = createSlice({
 
         return 0;
       });
-
       saveUserData(state.userData);
-    }
+    },
+    showToast(state, action) {
+      const { message, type } = action.payload;
+      const toastClass = type === "success" ? "alert-success" : "alert-error";
+      state.toast = { show: true, message, toastClass };
+    },
+    hideToast(state) {
+      state.toast = { show: false, message: "", toastClass: "" };
+    },
   },
 });
 
-export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds, wipeUserData, sortFunds } =
-  mfSlice.actions;
+export const {
+  setData,
+  setUserData,
+  addOrUpdateFund,
+  setUserName,
+  updateAllFunds,
+  wipeUserData,
+  sortFunds,
+  showToast,
+  hideToast,
+} = mfSlice.actions;
 
 export default mfSlice.reducer;

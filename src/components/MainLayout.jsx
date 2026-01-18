@@ -1,10 +1,25 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
+import { useSelector, useDispatch } from "react-redux";
+import { hideToast } from "../store/mf/mfSlice";
 import BottomNav from "./BottomNav";
 import ReloadPrompt from "./ReloadPrompt";
 import FundsSubHeader from "./FundsSubHeader.jsx";
 
 const MainLayout = () => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const toast = useSelector((state) => state.mf.toast);
+
+  // Auto-hide toast after 3 seconds
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        dispatch(hideToast());
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show, dispatch]);
 
   const getPageTitle = (path) => {
     switch (path) {
@@ -54,6 +69,15 @@ const MainLayout = () => {
       <div className="shrink-0">
         <BottomNav />
       </div>
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="toast toast-end" style={{ bottom: "75px" }}>
+          <div className={`alert ${toast.toastClass}`}>
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

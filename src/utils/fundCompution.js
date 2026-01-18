@@ -123,6 +123,8 @@ export const formatFundData = async (data) => {
         code: schemeCode,
         // Optional: fill in name if missing and we just fetched it
         name: fund.name ?? fetchedDetails?.name ?? "Unknown Fund",
+        units: parseFloat(fund.units) || 0,
+        costValue: parseFloat(fund.costValue) || 0,
       };
     })
   );

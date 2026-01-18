@@ -4,12 +4,13 @@ import { useSelector } from "react-redux";
 
 const Holdings = () => {
     const { funds } = useSelector((state) => state.mf.userData);
+    const filteredFunds = funds.filter(fund => parseFloat(fund.costValue));
     return (
         <section className="holdings-section">
             <AddFund />
-            {funds && funds.length > 0 ? (
+            {filteredFunds && filteredFunds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {funds.map((fund, index) => (
+                    {filteredFunds.map((fund, index) => (
                         <FundCard key={fund.isin + index} fund={fund} />
                     ))}
                 </div>

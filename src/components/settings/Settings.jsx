@@ -1,17 +1,12 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { wipeUserData, setUserData } from "../../store/mf/mfSlice.js";
+import { wipeUserData, setUserData, showToast } from "../../store/mf/mfSlice.js";
 import { ChevronRight, User } from "lucide-react";
 
 import { isValidData, formatFundData } from "../../utils/fundCompution.js";
 import { fetchFundDetails } from "../../utils/api.js";
 
 const Settings = () => {
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    toastClass: "",
-  });
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
 
@@ -46,17 +41,17 @@ const Settings = () => {
       try {
         const json = JSON.parse(e.target.result);
         if (!json) {
-            showToast("Invalid backup file", "error");
+            handleShowToast("Invalid backup file", "error");
             return;
         }
         if (!isValidData(json)) {
-          showToast("Invalid data in backup file", "error");
+          handleShowToast("Invalid data in backup file", "error");
           return;
         }
 
         const formattedData = await formatFundData(json);
         await dispatch(setUserData({  name, funds: formattedData }));
-        await showToast("Data restored successfully!", "success");
+        await handleShowToast("Data restored successfully!", "success");
         formattedData.forEach((fund) => {
           // Fetch latest NAV for each fund
           fetchFundDetails(fund.code);
@@ -80,16 +75,11 @@ const Settings = () => {
   const confirmWipe = () => {
     dispatch(wipeUserData());
     closeModal();
-    showToast("All user data wiped successfully!", "success");
+    dispatch(showToast({ message: "All user data wiped successfully!", type: "success" }));
   };
 
-  const showToast = (message, type) => {
-    const toastClass = type === "success" ? "alert-success" : "alert-error";
-    setToast({ show: true, message, toastClass });
-    setTimeout(
-      () => setToast({ show: false, message: "", toastClass: "" }),
-      3000
-    );
+  const handleShowToast = (message, type) => {
+    dispatch(showToast({ message, type }));
   };
 
   return (
@@ -175,13 +165,6 @@ const Settings = () => {
         </div>
       </dialog>
 
-      {toast.show && (
-        <div className="toast toast-end" style={{ bottom: "75px" }}>
-          <div className={`alert ${toast.toastClass}`}>
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
     </>
   );
 };

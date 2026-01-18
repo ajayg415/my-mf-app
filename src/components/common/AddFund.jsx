@@ -139,7 +139,7 @@ const AddFund = ({ fundDetails = {} }) => {
                       onChange={(e) =>
                         setSelectedFund({
                           ...selectedFund,
-                          units: e.target.value,
+                          units: parseFloat(e.target.value),
                         })
                       }
                     />

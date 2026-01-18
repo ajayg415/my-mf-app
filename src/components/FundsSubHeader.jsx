@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, FunnelPlus } from "lucide-react";
 import { sortFunds } from "../store/mf/mfSlice";
 
 const SubHeader = () => {
@@ -34,9 +34,12 @@ const SubHeader = () => {
   return (
     <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
       {/* will be used below div for filters*/}
-      <div className="funds-count px-2 text-gray-600">
+      <div className="flex items-centerfunds-count px-2 text-gray-600">
         <span className="text-xs font-medium">
           {funds.length} Funds
+        </span>
+        <span className="px-2">
+            <FunnelPlus size={16} />
         </span>
       </div>
 
