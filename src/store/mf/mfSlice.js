@@ -65,11 +65,40 @@ const mfSlice = createSlice({
     wipeUserData(state) {
       state.userData = initialState.userData;
       saveUserData(state.userData);
+    },
+    sortFunds(state, action) {
+      const { fieldKey } = action.payload;
+      if (!fieldKey || !state.userData.funds) return;
+
+      // Sort the funds array based on the field
+      state.userData.funds.sort((a, b) => {
+        const aVal = a[fieldKey];
+        const bVal = b[fieldKey];
+
+        // Handle null/undefined values
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+
+        // Numeric comparison
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return bVal - aVal; // Descending order for numbers
+        }
+
+        // String comparison
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return aVal.localeCompare(bVal); // Ascending order for strings
+        }
+
+        return 0;
+      });
+
+      saveUserData(state.userData);
     }
   },
 });
 
-export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds, wipeUserData } =
+export const { setData, setUserData, addOrUpdateFund, setUserName, updateAllFunds, wipeUserData, sortFunds } =
   mfSlice.actions;
 
 export default mfSlice.reducer;
