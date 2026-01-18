@@ -138,6 +138,7 @@ export const computeFundsSummary = (funds) => {
       summary.totalGainLoss += fund.gainLoss;
       summary.totalDayChange += fund.dayChange || 0;
       summary.totalWeekChange += fund.weekChange || 0;
+      summary.totalMonthChange += fund.monthChange || 0;
       summary.totalGainLossPercentage = calculateProfitLossPercentage(
         summary.totalGainLoss,
         summary.totalCostValue

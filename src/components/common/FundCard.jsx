@@ -15,6 +15,9 @@ const FundCard = ({ fund, onClick }) => {
   const oneWeekChange = parseFloat(fund.weekChange || 0);
   const oneWeekPercent = parseFloat(fund.weekChangePercentage || 0);
 
+  const oneMonthChange = parseFloat(fund.monthChange || 0);
+  const oneMonthPercent = parseFloat(fund.monthChangePercentage || 0);
+
   // 2. Formatters
   const formatMoney = (amount) => {
     return new Intl.NumberFormat('en-IN', {
@@ -53,6 +56,11 @@ const FundCard = ({ fund, onClick }) => {
             <span className="font-semibold text-gray-700">{formatMoney(invested)}</span>
           </div>
 
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-gray-400">Units</span>
+            <span className="font-semibold text-gray-700">{fund.units}</span>
+          </div>
+
           <div className="flex flex-col gap-0.5 text-right">
              <span className="text-xs text-gray-400">Current Value</span>
              <span className="font-bold text-gray-900">{formatMoney(current)}</span>
@@ -83,6 +91,18 @@ const FundCard = ({ fund, onClick }) => {
               <div className={`font-bold flex items-center gap-1 ${getColorClass(oneWeekChange)}`}>
                  <span>{oneWeekChange > 0 ? "+" : ""}{formatMoney(oneWeekChange)}</span>
                  <span className="opacity-80 font-medium">({Math.abs(oneWeekPercent).toFixed(2)}%)</span>
+              </div>
+           </div>
+
+           {/* 1 Month Row (Optional Separator line could go here) */}
+           <div className="flex justify-between items-center text-xs">
+              <div className="flex items-center gap-1.5 text-gray-500">
+                <Clock size={12} className="opacity-70" />
+                <span>1 Month</span>
+              </div>
+              <div className={`font-bold flex items-center gap-1 ${getColorClass(oneMonthChange)}`}>
+                 <span>{oneMonthChange > 0 ? "+" : ""}{formatMoney(oneMonthChange)}</span>
+                 <span className="opacity-80 font-medium">({Math.abs(oneMonthPercent).toFixed(2)}%)</span>
               </div>
            </div>
 

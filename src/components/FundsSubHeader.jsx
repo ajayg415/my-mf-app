@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { ArrowUpDown } from "lucide-react";
 import { sortFunds } from "../store/mf/mfSlice";
 
 const SubHeader = () => {
   const dispatch = useDispatch();
+  const { funds } = useSelector((state) => state.mf.userData);
 
   // Array of label options to cycle through
   const LABEL_OPTIONS = [
@@ -18,7 +19,7 @@ const SubHeader = () => {
     { label: "1W Change", key: "weekChange" },
     { label: "1W Change Percentage", key: "weekChangePercentage" },
     { label: "1M Change", key: "monthChange" },
-    { label: "1M Change Percentage", key: "monthChangePercentage" }
+    { label: "1M Change Percentage", key: "monthChangePercentage" },
   ];
 
   const [currentLabelIndex, setCurrentLabelIndex] = useState(0);
@@ -31,9 +32,13 @@ const SubHeader = () => {
   };
 
   return (
-    <div className="funds-sub-header flex justify-between items-center bg-white hover:bg-gray-100 transition-colors py-1">
+    <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
       {/* will be used below div for filters*/}
-      <div className="funds-filters"></div>
+      <div className="funds-count px-2 text-gray-600">
+        <span className="text-xs font-medium">
+          {funds.length} Funds
+        </span>
+      </div>
 
       {/* Label and Icon - Clickable */}
       <button

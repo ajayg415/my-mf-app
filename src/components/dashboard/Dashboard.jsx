@@ -20,6 +20,7 @@ const Dashboard = () => {
       totalGainLossPercentage: 0,
       totalDayChange: 0,
       totalWeekChange: 0,
+      totalMonthChange: 0,
     };
   }, [userData]); // Dependency: Only re-run if userData changes
 
@@ -100,6 +101,15 @@ const Dashboard = () => {
                 <span className={`text-xs font-semibold ${summary.totalWeekChange >= 0 ? "text-success" : "text-error"}`}>
                   {summary.totalWeekChange >= 0 ? <TrendingUp size={10} className="inline" /> : <TrendingDown size={10} className="inline" />}
                   {summary.totalWeekChange >= 0 ? "+" : ""}{formatMoney(summary.totalWeekChange)}
+                </span>
+              </div>
+
+              {/* 1 Month Change - Sub-value */}
+              <div className="flex items-center justify-end gap-1">
+                <span className="text-xs font-medium text-gray-500">1M:</span>
+                <span className={`text-xs font-semibold ${summary.totalMonthChange >= 0 ? "text-success" : "text-error"}`}>
+                  {summary.totalMonthChange >= 0 ? <TrendingUp size={10} className="inline" /> : <TrendingDown size={10} className="inline" />}
+                  {summary.totalMonthChange >= 0 ? "+" : ""}{formatMoney(summary.totalMonthChange)}
                 </span>
               </div>
             </div>
