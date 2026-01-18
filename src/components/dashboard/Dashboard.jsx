@@ -1,6 +1,7 @@
 import { useMemo } from "react"; // 1. Import useMemo
 import { useSelector } from "react-redux";
 import { computeFundsSummary } from "../../utils/fundCompution"; 
+import { formatMoney } from "../../utils/utils.js";
 import { TrendingUp, TrendingDown, Wallet, PieChart } from "lucide-react";
 
 const Dashboard = () => {
@@ -23,15 +24,6 @@ const Dashboard = () => {
       totalMonthChange: 0,
     };
   }, [userData]); // Dependency: Only re-run if userData changes
-
-  // Helper: Currency Formatter
-  const formatMoney = (amount) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount || 0);
-  };
 
   const isProfit = summary.totalGainLoss >= 0;
 

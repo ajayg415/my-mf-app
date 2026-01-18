@@ -154,6 +154,7 @@ export const computeFundsSummary = (funds) => {
       totalGainLossPercentage: 0,
       totalDayChange: 0,
       totalWeekChange: 0,
+      totalMonthChange: 0,
     }
   );
 };

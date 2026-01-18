@@ -1,6 +1,8 @@
 import React from "react";
 import { TrendingUp, TrendingDown, Clock } from "lucide-react";
 
+import { formatMoney } from "../../utils/utils.js";
+
 const FundCard = ({ fund, onClick }) => {
   // 1. Safe parsing & Defaults
   const invested = parseFloat(fund.costValue || 0);
@@ -17,15 +19,6 @@ const FundCard = ({ fund, onClick }) => {
 
   const oneMonthChange = parseFloat(fund.monthChange || 0);
   const oneMonthPercent = parseFloat(fund.monthChangePercentage || 0);
-
-  // 2. Formatters
-  const formatMoney = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   const isProfit = totalPL >= 0;
   
