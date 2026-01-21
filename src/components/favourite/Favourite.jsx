@@ -1,14 +1,18 @@
 import FundCard from "../common/FundCard";
-import { useSelector } from "react-redux"; 
+import { useSelector, useDispatch } from "react-redux"; 
+
+import { setActiveDataCount } from "../../store/mf/mfSlice";
 
 const Favoutite = () => {
     const { funds } = useSelector((state) => state.mf.userData);
-    const favFUnds = funds.filter(fund => fund.isFavorite);
+    const favFunds = funds.filter(fund => fund.isFavorite);
+    const dispatch = useDispatch();
+    dispatch(setActiveDataCount(favFunds.length));
     return (
         <section className="favoutite-section">
-            {favFUnds && favFUnds.length > 0 ? (
+            {favFunds && favFunds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    {favFUnds.map((fund, index) => (
+                    {favFunds.map((fund, index) => (
                         <FundCard key={fund.isin + index} fund={fund} />
                     ))}
                 </div>

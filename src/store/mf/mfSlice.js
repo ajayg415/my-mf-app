@@ -14,6 +14,9 @@ const initialState = {
     message: "",
     toastClass: "",
   },
+  activeData: {
+    count: 0
+  }
 };
 
 const mfSlice = createSlice({
@@ -107,6 +110,10 @@ const mfSlice = createSlice({
     hideToast(state) {
       state.toast = { show: false, message: "", toastClass: "" };
     },
+    setActiveDataCount(state, action) {
+      console.log(`updating active data count to ${action.payload}`);
+      state.activeData.count = action.payload;
+    }
   },
 });
 
@@ -120,6 +127,7 @@ export const {
   sortFunds,
   showToast,
   hideToast,
+  setActiveDataCount
 } = mfSlice.actions;
 
 export default mfSlice.reducer;

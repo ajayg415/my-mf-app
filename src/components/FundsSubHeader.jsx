@@ -5,7 +5,7 @@ import { sortFunds } from "../store/mf/mfSlice";
 
 const SubHeader = () => {
   const dispatch = useDispatch();
-  const { funds } = useSelector((state) => state.mf.userData);
+  const { count: activeFundsCount } = useSelector((state) => state.mf.activeData);
 
   // Array of label options to cycle through
   const LABEL_OPTIONS = [
@@ -36,7 +36,7 @@ const SubHeader = () => {
       {/* will be used below div for filters*/}
       <div className="flex items-centerfunds-count px-2 text-gray-600">
         <span className="text-xs font-medium">
-          {funds.length} Funds
+          {activeFundsCount} Funds
         </span>
         <span className="px-2">
             <FunnelPlus size={16} />
