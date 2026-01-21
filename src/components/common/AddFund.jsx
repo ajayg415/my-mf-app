@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Heart } from "lucide-react";
 import { useDispatch } from "react-redux";
 
@@ -27,7 +27,7 @@ const mockFundDetails = {
   ],
 };
 
-const AddFund = ({ fundDetails = {} }) => {
+const AddFund = ({ fundDetails = {}, onClose }) => {
   const [fundCode, setFundCode] = useState(Boolean(fundDetails?.code));
   const [selectedFund, setSelectedFund] = useState({
     folio: "",
@@ -49,6 +49,7 @@ const AddFund = ({ fundDetails = {} }) => {
     modal.close();
     setSelectedFund(null); // Reset selection on close
     setFundCode(null);
+    onClose?.();
   };
 
   const handleContinue = () => {
@@ -60,6 +61,12 @@ const AddFund = ({ fundDetails = {} }) => {
     dispatch(addOrUpdateFund(selectedFund));
     closeModal();
   };
+
+  useEffect(() => {
+    if (fundDetails?.code) {
+      openModal();
+    }
+  }, [fundDetails]);
 
   return (
     <>

@@ -34,7 +34,7 @@ const SubHeader = () => {
   return (
     <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
       {/* will be used below div for filters*/}
-      <div className="flex items-centerfunds-count px-2 text-gray-600">
+      <div className="flex items-center funds-count px-2 text-gray-600">
         <span className="text-xs font-medium">
           {activeFundsCount} Funds
         </span>

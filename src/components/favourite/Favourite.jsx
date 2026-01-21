@@ -13,7 +13,7 @@ const Favoutite = () => {
             {favFunds && favFunds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                     {favFunds.map((fund, index) => (
-                        <FundCard key={fund.isin + index} fund={fund} />
+                        <FundCard key={fund.isin + index} fund={fund} hasEdit={false} />
                     ))}
                 </div>
             ) : (
