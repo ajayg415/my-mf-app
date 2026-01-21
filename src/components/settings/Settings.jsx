@@ -1,6 +1,10 @@
 import { useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { wipeUserData, setUserData, showToast } from "../../store/mf/mfSlice.js";
+import {
+  wipeUserData,
+  setUserData,
+  showToast,
+} from "../../store/mf/mfSlice.js";
 import { ChevronRight, User } from "lucide-react";
 
 import { isValidData, formatFundData } from "../../utils/fundCompution.js";
@@ -11,6 +15,19 @@ const Settings = () => {
   const fileInputRef = useRef(null);
 
   const { name } = useSelector((state) => state.mf.userData);
+  // funds.map((f) => ({
+  //   costValue: f.costValue,
+  //   folio: f.folio,
+  //   isFavorite: false,
+  //   isin: f.isin,
+  //   key: new Date().getTime(),
+  //   name: f.amcName,
+  //   schemeName: f.amcName,
+  //   units: f.closingBalance,
+  //   schemeType: f.schemeType,
+  //   schemeOption: f.schemeOption,
+  //   sipAllow: f.sipAllow,
+  // }));
 
   // 1. Backup Logic
   const handleBackup = () => {
@@ -41,16 +58,16 @@ const Settings = () => {
       try {
         const json = JSON.parse(e.target.result);
         if (!json) {
-            handleShowToast("Invalid backup file", "error");
-            return;
+          handleShowToast("Invalid backup file", "error");
+          return;
         }
-        if (!isValidData(json)) {
+        if (!isValidData(json.funds)) {
           handleShowToast("Invalid data in backup file", "error");
           return;
         }
 
-        const formattedData = await formatFundData(json);
-        await dispatch(setUserData({  name, funds: formattedData }));
+        const formattedData = await formatFundData(json.funds);
+        await dispatch(setUserData({ name: json.name, funds: formattedData }));
         await handleShowToast("Data restored successfully!", "success");
         formattedData.forEach((fund) => {
           // Fetch latest NAV for each fund
@@ -75,7 +92,12 @@ const Settings = () => {
   const confirmWipe = () => {
     dispatch(wipeUserData());
     closeModal();
-    dispatch(showToast({ message: "All user data wiped successfully!", type: "success" }));
+    dispatch(
+      showToast({
+        message: "All user data wiped successfully!",
+        type: "success",
+      }),
+    );
   };
 
   const handleShowToast = (message, type) => {
@@ -164,7 +186,6 @@ const Settings = () => {
           </div>
         </div>
       </dialog>
-
     </>
   );
 };
