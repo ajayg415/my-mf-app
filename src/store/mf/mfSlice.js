@@ -111,7 +111,6 @@ const mfSlice = createSlice({
       state.toast = { show: false, message: "", toastClass: "" };
     },
     setActiveDataCount(state, action) {
-      console.log(`updating active data count to ${action.payload}`);
       state.activeData.count = action.payload;
     }
   },

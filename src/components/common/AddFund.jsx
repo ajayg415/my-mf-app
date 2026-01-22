@@ -6,6 +6,11 @@ import { useDispatch } from "react-redux";
 import FundSelect from "./FundSelect";
 import { addOrUpdateFund } from "../../store/mf/mfSlice.js";
 
+// Generate a unique key
+const generateUniqueKey = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 // eslint-disable-next-line no-unused-vars
 const mockFundDetails = {
   id: "100033",
@@ -28,16 +33,16 @@ const mockFundDetails = {
 };
 
 const AddFund = ({ fundDetails = {}, onClose }) => {
-  const [fundCode, setFundCode] = useState(Boolean(fundDetails?.code));
   const [selectedFund, setSelectedFund] = useState({
     folio: "",
-    key: new Date().getTime(),
+    key: generateUniqueKey(),
     units: "",
     isFavorite: false,
     // ...mockFundDetails,
     ...fundDetails,
   });
   const dispatch = useDispatch();
+  const fundCode = fundDetails?.code || null;
 
   const openModal = () => {
     const modal = document.getElementById("add-fund-modal");
@@ -48,13 +53,12 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
     const modal = document.getElementById("add-fund-modal");
     modal.close();
     setSelectedFund(null); // Reset selection on close
-    setFundCode(null);
     onClose?.();
   };
 
   const handleContinue = () => {
     if (!selectedFund) return;
-    setFundCode(selectedFund.code);
+    // fundCode is now derived from fundDetails
   };
 
   const saveFund = () => {
@@ -64,7 +68,11 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
 
   useEffect(() => {
     if (fundDetails?.code) {
-      openModal();
+      setTimeout(() => {
+        setSelectedFund(fundDetails);
+        const modal = document.getElementById("add-fund-modal");
+        modal?.showModal();
+      }, 0);
     }
   }, [fundDetails]);
 
@@ -105,7 +113,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                     type="text"
                     placeholder="e.g. 12345678/90"
                     className="input input-bordered w-full input-sm"
-                    value={selectedFund.folio}
+                    value={selectedFund?.folio}
                     onChange={(e) =>
                       setSelectedFund({
                         ...selectedFund,
@@ -124,7 +132,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                       type="number"
                       placeholder="0.00"
                       className="input input-bordered w-full input-sm"
-                      value={selectedFund.costValue}
+                      value={selectedFund?.costValue}
                       onChange={(e) =>
                         setSelectedFund({
                           ...selectedFund,
@@ -142,7 +150,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                       type="number"
                       placeholder="0"
                       className="input input-bordered w-full input-sm"
-                      value={selectedFund.units}
+                      value={selectedFund?.units}
                       onChange={(e) =>
                         setSelectedFund({
                           ...selectedFund,
@@ -158,7 +166,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                     <input
                       type="checkbox"
                       className="toggle toggle-secondary toggle-sm"
-                      checked={selectedFund.isFavorite}
+                      checked={selectedFund?.isFavorite}
                       onChange={(e) =>
                         setSelectedFund({
                           ...selectedFund,
@@ -171,7 +179,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                       <Heart
                         size={18}
                         className={
-                          selectedFund.isFavorite
+                          selectedFund?.isFavorite
                             ? "fill-red-500 text-red-500"
                             : ""
                         }
@@ -197,7 +205,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                   onSelect={(fund) => {
                     setSelectedFund({
                       ...fund,
-                      key: new Date().getTime(),
+                      key: generateUniqueKey(),
                       schemeName: fund.name,
                       units: "",
                       folio: "",
@@ -207,14 +215,14 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                   }}
                 />
                 {selectedFund?.name &&
-                  selectedFund.isin &&
-                  selectedFund.code && (
+                  selectedFund?.isin &&
+                  selectedFund?.code && (
                     <div className="mt-6 p-4 bg-base-200 rounded-xl">
                       <p className="text-sm opacity-70">Selected Fund:</p>
-                      <p className="font-bold">{selectedFund.name}</p>
-                      <p className="text-xs mt-1">ISIN: {selectedFund.isin}</p>
+                      <p className="font-bold">{selectedFund?.name}</p>
+                      <p className="text-xs mt-1">ISIN: {selectedFund?.isin}</p>
                       <p className="text-xs mt-1">
-                        Fund Code: {selectedFund.code}
+                        Fund Code: {selectedFund?.code}
                       </p>
 
                       <button

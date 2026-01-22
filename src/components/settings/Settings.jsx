@@ -20,7 +20,6 @@ const Settings = () => {
   //   folio: f.folio,
   //   isFavorite: false,
   //   isin: f.isin,
-  //   key: new Date().getTime(),
   //   name: f.amcName,
   //   schemeName: f.amcName,
   //   units: f.closingBalance,

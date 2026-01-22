@@ -16,9 +16,8 @@ const Holdings = () => {
             <AddFund fundDetails={activeFund} onClose={() => setActiveFund({})} />
             {filteredFunds && filteredFunds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* remove hasEdit={false} to enable edit funcationality, it is not working properly now*/}
                     {filteredFunds.map((fund, index) => (
-                        <FundCard key={fund.isin + index} fund={fund} onEdit={() => setActiveFund(fund)} hasEdit={false} />
+                        <FundCard key={fund.isin + index} fund={fund} onEdit={() => setActiveFund(fund)} />
                     ))}
                 </div>
             ) : (
