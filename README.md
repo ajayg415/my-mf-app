@@ -70,35 +70,26 @@ We are actively working on v2.0. The following features are currently in develop
   * XIRR (Extended Internal Rate of Return) calculation.
   * Historical NAV Chart.
 
-### 3. ✏️ Edit Functionality
-* Add an **"Edit Transaction"** feature to the fund card.
-* Allow users to modify:
-  * Purchase Date (crucial for accurate XIRR).
-  * Units/NAV (in case of manual entry errors).
-  * Folio Numbers.
-
-### 4. 📊 Filtering
+### 3. 📊 Filtering
 * **Filter:** Allow filtering funds by *Equity/Debt* category or specific *AMC* (Asset Management Company).
 
-### 5. 🎨 Revamped Fund Card
-* **Enhanced Design:** Modernize the fund card UI with better visual hierarchy.
-* **Quick Actions:** Add inline actions like "Edit", "Delete", and "View Details".
+### 4. 🎨 Revamped Fund Card
+* **Quick Actions:** Add inline actions like "Delete", and "View Details".
 * **Visual Indicators:** Show fund category badges (Equity/Debt) and AMC logos.
-* **Performance Metrics:** Display fund performance metrics at a glance (1D, 1W, 1M changes).
 
-### 6. 📊 Dashboard Enhancements with Graphs
+### 5. 📊 Dashboard Enhancements with Graphs
 * **NAV Chart:** Add interactive line/area charts showing historical NAV movements.
 * **Portfolio Breakdown:** Visualize portfolio allocation by fund category (Equity/Debt).
 * **Performance Timeline:** Show portfolio value trends over time (1W, 1M, 3M, 1Y).
 * **Chart Library:** Integrate **Chart.js** or **Recharts** for responsive, interactive visualizations.
 
-### 7. 📁 Group & Organize Data
+### 6. 📁 Group & Organize Data
 * **Group by AMC:** Organize funds by Asset Management Company.
 * **Group by Category:** Display funds grouped by type (Equity, Debt, Hybrid).
 * **Custom Tags:** Allow users to create custom groups/tags for funds.
 * **Dashboard Summaries:** Show aggregated metrics per group in the dashboard.
 
-### 8. 📱 Smart Notifications
+### 7. 📱 Smart Notifications
 * **Daily Alerts:** Enable local Push Notifications to trigger at 9:00 AM, alerting the user about the overall portfolio movement (Up/Down) based on the latest NAV data.
 
 
