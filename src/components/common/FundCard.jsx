@@ -80,20 +80,20 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
           <div className="grid grid-cols-3 gap-2 items-center">
             {/* 1. Invested (left) */}
             <div className="text-left">
-              <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">
+              <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Invested
               </p>
-              <p className="text-gray-600 text-sm leading-none">
+              <p className="text-gray-600 text-xs leading-none">
                 {formatMoney(invested)}
               </p>
             </div>
 
             {/* 2. Current Value (center) */}
             <div className="text-center">
-              <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">
+              <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Current
               </p>
-              <p className="text-gray-900 text-sm leading-none">
+              <p className="text-gray-900 text-xs leading-none">
                 {formatMoney(current)}
               </p>
             </div>
@@ -101,7 +101,7 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
 
             {/* 3. Total Returns (Right) - FIXED: Single Line */}
             <div className="text-right">
-              <p className="text-[11px] text-gray-400 tracking-wide mb-0.5">
+              <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Returns
               </p>
 
@@ -109,7 +109,7 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
               <div
                 className={`flex items-baseline justify-end gap-1 whitespace-nowrap leading-none ${getColorClass(totalPL)}`}
               >
-                <span className="text-sm">
+                <span className="text-xs">
                   {isProfit ? "+" : ""}
                   {formatMoney(totalPL)}
                 </span>
@@ -125,7 +125,7 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
         <div
           className={`overflow-hidden transition-[max-height] duration-300 ease-in-out border-t border-dashed border-gray-100 bg-gray-50/50 ${isOpen ? "max-h-60" : "max-h-0"}`}
         >
-          <div className="p-3 grid gap-2 text-sm">
+          <div className="p-3 grid gap-2 text-xs">
             {/* Units Info */}
             <div className="flex justify-between items-center py-1 px-2">
               <span className="text-xs font-medium text-gray-500">
