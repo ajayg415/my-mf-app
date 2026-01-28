@@ -15,11 +15,11 @@ const SubHeader = () => {
     { label: "Portfolio Value", key: "currentMktValue" },
     { label: "Total Gain/Loss", key: "gainLoss" },
     { label: "1D Change", key: "dayChange" },
-    { label: "1D Change Percentage", key: "dayChangePercentage" },
-    { label: "1W Change", key: "weekChange" },
-    { label: "1W Change Percentage", key: "weekChangePercentage" },
-    { label: "1M Change", key: "monthChange" },
-    { label: "1M Change Percentage", key: "monthChangePercentage" },
+    // { label: "1D Change Percentage", key: "dayChangePercentage" },
+    // { label: "1W Change", key: "weekChange" },
+    // { label: "1W Change Percentage", key: "weekChangePercentage" },
+    // { label: "1M Change", key: "monthChange" },
+    // { label: "1M Change Percentage", key: "monthChangePercentage" },
   ];
 
   const [currentLabelIndex, setCurrentLabelIndex] = useState(0);
