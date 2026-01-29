@@ -124,7 +124,7 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
         <div
           className={`overflow-hidden transition-[max-height] duration-300 ease-in-out border-t border-dashed border-gray-100 bg-gray-50/30 ${isOpen ? "max-h-[500px]" : "max-h-0"}`}
         >
-          <div className="p-3 flex flex-col gap-2 text-xs">
+          <div className="px-3 py-1 flex flex-col gap-2 text-xs">
             
             {/* STATIC INFO GROUP */}
             <div className="flex flex-col">
