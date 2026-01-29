@@ -8,6 +8,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { formatMoney } from "../../utils/utils.js";
+import { MF_NAV_URL } from "../../utils/api.js";
 
 const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,8 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
   const current = parseFloat(fund.currentMktValue || 0);
   const totalPL = parseFloat(fund.gainLoss || 0);
   const totalPLPercent = parseFloat(fund.gainLossPercentage || 0);
+  const code = fund.code;
+  const nav = parseFloat(fund.nav || 0);
 
   // Metrics for Expanded View
   const metrics = [
@@ -47,9 +50,8 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
         {/* --- MAIN CARD CONTENT (Always Visible) --- */}
         <div className="p-4 cursor-pointer pb-1" onClick={() => setIsOpen(!isOpen)}>
           
-          {/* ROW 1: Identity (Name + Edit on Top, Label Below) */}
+          {/* ROW 1: Identity */}
           <div className="flex flex-col mb-4">
-            {/* Top Line: Name & Edit Icon */}
             <div className="flex justify-between items-start gap-2">
               <h3 className="font-bold text-gray-800 leading-tight text-sm md:text-base line-clamp-1 break-words capitalize">
                 {fund.name}
@@ -68,7 +70,6 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
               )}
             </div>
 
-            {/* Second Line: Label */}
             <div className="mt-1">
               <span className="badge badge-xs badge-ghost text-[10px] uppercase tracking-wider font-semibold text-gray-500">
                 {fund.schemeType || "Growth"}
@@ -76,9 +77,9 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
             </div>
           </div>
 
-          {/* ROW 2: The Big Three (Current, Invested, Total Returns) */}
+          {/* ROW 2: The Big Three */}
           <div className="grid grid-cols-3 gap-2 items-center">
-            {/* 1. Invested (left) */}
+            {/* 1. Invested */}
             <div className="text-left">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Invested
@@ -88,7 +89,7 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
               </p>
             </div>
 
-            {/* 2. Current Value (center) */}
+            {/* 2. Current Value */}
             <div className="text-center">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Current
@@ -99,13 +100,11 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
             </div>
 
 
-            {/* 3. Total Returns (Right) - FIXED: Single Line */}
+            {/* 3. Total Returns */}
             <div className="text-right">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Returns
               </p>
-
-              {/* Flex container: items-baseline aligns text bottoms, whitespace-nowrap prevents breaking */}
               <div
                 className={`flex items-baseline justify-end gap-1 whitespace-nowrap leading-none ${getColorClass(totalPL)}`}
               >
@@ -121,44 +120,71 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
           </div>
         </div>
 
-        {/* --- EXPANDABLE SECTION (Detailed Metrics) --- */}
+        {/* --- EXPANDABLE SECTION --- */}
         <div
-          className={`overflow-hidden transition-[max-height] duration-300 ease-in-out border-t border-dashed border-gray-100 bg-gray-50/50 ${isOpen ? "max-h-60" : "max-h-0"}`}
+          className={`overflow-hidden transition-[max-height] duration-300 ease-in-out border-t border-dashed border-gray-100 bg-gray-50/30 ${isOpen ? "max-h-[500px]" : "max-h-0"}`}
         >
-          <div className="p-3 grid gap-2 text-xs">
-            {/* Units Info */}
-            <div className="flex justify-between items-center py-1 px-2">
-              <span className="text-xs font-medium text-gray-500">
-                Units Held
-              </span>
-              <span className="text-xs font-mono font-bold text-gray-700">
-                {fund.units}
-              </span>
+          <div className="p-3 flex flex-col gap-2 text-xs">
+            
+            {/* STATIC INFO GROUP */}
+            <div className="flex flex-col">
+              {/* Scheme Code */}
+              <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
+                <span className="text-xs font-medium text-gray-500">Scheme Code</span>
+                <a
+                  href={`${MF_NAV_URL}/${code}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono font-bold text-primary hover:underline"
+                >
+                  {code}
+                </a>
+              </div>
+
+              {/* Current NAV */}
+               <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
+                  <span className="text-xs font-medium text-gray-500">Current NAV</span>
+                  <span className="text-xs font-mono font-bold text-gray-600">₹{nav.toFixed(2)}</span>
+               </div>
+
+               {/* Units Held */}
+               <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
+                 <span className="text-xs font-medium text-gray-500">Units Held</span>
+                 <span className="text-xs font-mono font-bold text-gray-600">{fund.units}</span>
+               </div>
             </div>
 
-            {/* Metrics Loop (1D, 1W, 1M) */}
-            {metrics.map((m, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center py-1.5 px-2 rounded-md hover:bg-white transition-colors"
-              >
-                <div className="flex items-center gap-2 text-gray-500">
-                  <Clock size={12} className="opacity-60" />
-                  <span className="text-xs font-medium">{m.label} Return</span>
+            {/* PERFORMANCE BLOCK (HIGHLIGHTED) */}
+            <div className="bg-base-200/60 rounded-lg p-2 border border-base-200 flex flex-col">
+                {/* Optional Header for the block */}
+                <div className="text-[10px] uppercase font-bold text-gray-400 px-1 tracking-wider">
+                   Recent Performance
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold ${getColorClass(m.val)}`}>
-                    {m.val > 0 ? "+" : ""}
-                    {formatMoney(m.val)}
-                  </span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getBgClass(m.val)} ${getColorClass(m.val)}`}
+
+                {metrics.map((m, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center px-2 rounded hover:bg-white transition-colors"
                   >
-                    {Math.abs(m.pct).toFixed(2)}%
-                  </span>
-                </div>
-              </div>
-            ))}
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Clock size={12} className="opacity-70" />
+                      <span className="text-xs font-medium">{m.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-bold ${getColorClass(m.val)}`}>
+                        {m.val > 0 ? "+" : ""}
+                        {formatMoney(m.val)}
+                      </span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getBgClass(m.val)} ${getColorClass(m.val)}`}
+                      >
+                        {Math.abs(m.pct).toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
           </div>
         </div>
 

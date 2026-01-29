@@ -8,7 +8,7 @@ import { getCachedFund, cacheFundResponse } from "../services/db";
 import { db } from "../config/firebase";
 
 // API Endpoint for MFAPI.in
-const MF_NAV_URL = "https://api.mfapi.in/mf";
+export const MF_NAV_URL = "https://api.mfapi.in/mf";
 
 export const searchFunds = async (searchTerm) => {
   if (!searchTerm || searchTerm.length < 3) return [];
@@ -118,7 +118,7 @@ export const fetchFundDetails = async (schemeCode, forceRefresh = false) => {
 
   try {
     console.log(`[API Call] Fetching ${schemeCode}...`);
-    const response = await axios.get(`https://api.mfapi.in/mf/${schemeCode}`);
+    const response = await axios.get(`${MF_NAV_URL}/${schemeCode}`);
     const apiResponse = response.data;
 
     if (apiResponse && apiResponse.meta && apiResponse.data) {
