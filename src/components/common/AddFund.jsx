@@ -42,7 +42,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
     ...fundDetails,
   });
   const dispatch = useDispatch();
-  const fundCode = fundDetails?.code || null;
+  const fundCode = selectedFund?.code || null;
 
   const openModal = () => {
     const modal = document.getElementById("add-fund-modal");
