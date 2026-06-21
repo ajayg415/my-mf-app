@@ -27,6 +27,8 @@ const MainLayout = () => {
         return "Dashboard";
       case "/holdings":
         return "My Holdings";
+      case "/sips":
+        return "My SIPs";
       case "/settings":
         return "Settings";
       case "/favourite":
@@ -36,7 +38,7 @@ const MainLayout = () => {
     }
   };
 
-  const showFundsSubHeader = ["/holdings", "/favourite"].includes(
+  const showFundsSubHeader = ["/holdings", "/sips", "/favourite"].includes(
     location.pathname
   );
 

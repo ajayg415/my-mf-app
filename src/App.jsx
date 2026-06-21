@@ -6,6 +6,7 @@ import MainLayout from './components/MainLayout.jsx';
 import Dashboard from './components/dashboard/Dashboard.jsx';
 import Holdings from './components/holdings/Holdings.jsx';
 import Favourite from './components/favourite/Favourite.jsx';
+import Sips from './components/sips/Sips.jsx';
 import Settings from './components/settings/Settings.jsx';
 
 import { setUserData } from './store/mf/mfSlice.js';
@@ -31,6 +32,7 @@ export default function App() {
 				<Route path="/" element={<Dashboard />} />
 				<Route path="/dashboard" element={<Dashboard />} />
 				<Route path="/holdings" element={<Holdings />} />
+				<Route path="/sips" element={<Sips />} />
 				<Route path="/favourite" element={<Favourite />} />
 				<Route path="/settings" element={<Settings />} />
 			</Route>

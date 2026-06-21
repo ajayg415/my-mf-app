@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, PieChart, UserStar, Settings } from "lucide-react";
+import { LayoutDashboard, PieChart, Activity, UserStar, Settings } from "lucide-react";
 
 const BottomNav = () => {
     return (
@@ -20,6 +20,14 @@ const BottomNav = () => {
                 <span className="dock-label">Holdings</span>
             </NavLink>
 
+
+            <NavLink 
+                to="/sips"
+                className={({ isActive }) => isActive ? "dock-active dock-item" : "dock-item"}
+            >
+                <Activity size={20} />
+                <span className="dock-label">SIPS</span>
+            </NavLink>
 
             <NavLink 
                 to="/favourite"
