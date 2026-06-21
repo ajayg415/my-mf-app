@@ -9,6 +9,7 @@ const initialState = {
   data: "",
   loading: false,
   error: null,
+  sortBy: null,
   toast: {
     show: false,
     message: "",
@@ -77,6 +78,9 @@ const mfSlice = createSlice({
     sortFunds(state, action) {
       const { fieldKey } = action.payload;
       if (!fieldKey || !state.userData.funds) return;
+
+      // Track the active sort field so cards can render the sorted value
+      state.sortBy = fieldKey;
 
       // Sort the funds array based on the field
       state.userData.funds.sort((a, b) => {

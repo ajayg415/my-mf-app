@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import {
   TrendingUp,
   TrendingDown,
@@ -44,6 +45,28 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
   const getColorClass = (val) => (val >= 0 ? "text-success" : "text-error");
   const getBgClass = (val) => (val >= 0 ? "bg-success/10" : "bg-error/10");
 
+  const sortBy = useSelector((state) => state.mf.sortBy);
+
+  const getSortValue = () => {
+    if (!sortBy || (sortBy !== "units" && sortBy !== "dayChange")) return null;
+
+    const value = fund[sortBy];
+    if (value == null || value === "") return null;
+
+    if (sortBy === "dayChange") {
+      const numericValue = parseFloat(value || 0);
+      return `${numericValue >= 0 ? "+" : ""}${formatMoney(numericValue)}`;
+    }
+
+    if (sortBy === "units") {
+      return parseFloat(value).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+    }
+
+    return null;
+  };
+
+  const sortValue = getSortValue();
+
   return (
     <div className="card bg-base-100 shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md">
       <div className="card-body p-0">
@@ -70,10 +93,15 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
               )}
             </div>
 
-            <div className="mt-1">
+            <div className="mt-1 flex items-center justify-between gap-2">
               <span className="badge badge-xs badge-ghost text-[10px] uppercase tracking-wider font-semibold text-gray-500">
                 {fund.schemeType || "Growth"}
               </span>
+              {sortValue && (
+                <span className={`text-sm font-semibold tracking-wide whitespace-nowrap ${sortBy === "dayChange" ? getColorClass(parseFloat(fund.dayChange || 0)) : "text-primary"}`}>
+                  {sortValue}
+                </span>
+              )}
             </div>
           </div>
 
