@@ -15,10 +15,25 @@ const Settings = () => {
   const fileInputRef = useRef(null);
 
   const { name } = useSelector((state) => state.mf.userData);
+  // const sips = {
+  //   35169900: "HDFC Balanced Advantage Fund - Regular Plan - Growth",
+  //   91033512892: "Edelweiss Aggressive Hybrid Fund - Regular Plan Growth",
+  //   18977995: "Parag Parikh Flexi Cap Fund - Direct Plan Growth",
+  //   499189301491: "NIPPON INDIA SMALL CAP FUND - DIRECT GROWTH PLAN GROWTH OPTION",
+  //   910161876646: "Motilal Oswal Midcap Fund - Direct Plan Growth",
+  //   510104732563: "quant Multi Asset Allocation Fund - Direct Plan - Growth",
+  //   23065120: "ICICI Prudential Gold ETF FOF - Direct Plan - Growth" 
+  // }
+  // const favorites = {
+  //   1036742232: "Aditya Birla Sun Life Liquid Fund - Growth-Direct Plan",
+  //   35169900: "HDFC Balanced Advantage Fund - Regular Plan - Growth",
+  //   91033512892: "Edelweiss Aggressive Hybrid Fund - Regular Plan Growth",
+  // }
   // funds.map((f) => ({
   //   costValue: f.costValue,
   //   folio: f.folio,
-  //   isFavorite: false,
+  //   isFavorite: f.folio in favorites && f.schemeName === favorites[f.folio],
+  //   isSip: f.folio in sips && f.schemeName === sips[f.folio],
   //   isin: f.isin,
   //   name: f.amcName,
   //   schemeName: f.amcName,
