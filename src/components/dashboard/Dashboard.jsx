@@ -1,11 +1,15 @@
-import { useMemo } from "react"; // 1. Import useMemo
-import { useSelector } from "react-redux";
+import { useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { computeFundsSummary } from "../../utils/fundCompution"; 
 import { formatMoney } from "../../utils/utils.js";
-import { TrendingUp, TrendingDown, Wallet, PieChart } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, PieChart, RefreshCw } from "lucide-react";
+import { fetchFundDetails } from "../../utils/api.js";
+import { showToast } from "../../store/mf/mfSlice.js";
 
 const Dashboard = () => {
+  const dispatch = useDispatch();
   const userData = useSelector((state) => state.mf.userData);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 2. FIX: Use useMemo instead of useState + useEffect
   // This calculates the summary instantly whenever userData changes, without triggering a re-render.
@@ -27,6 +31,30 @@ const Dashboard = () => {
 
   const isProfit = summary.totalGainLoss >= 0;
 
+  const handleRefresh = async () => {
+    const fundsToRefresh = (userData?.funds || []).filter((fund) => fund.code);
+
+    if (!fundsToRefresh.length) {
+      dispatch(showToast({ message: "No funds available to refresh", type: "error" }));
+      return;
+    }
+
+    setIsRefreshing(true);
+    dispatch(showToast({ message: "Refreshing latest NAVs...", type: "success" }));
+
+    try {
+      for (const fund of fundsToRefresh) {
+        await fetchFundDetails(fund.code, true);
+      }
+      dispatch(showToast({ message: "Portfolio refreshed successfully", type: "success" }));
+    } catch (error) {
+      console.error("Failed to refresh portfolio NAVs:", error);
+      dispatch(showToast({ message: "Failed to refresh portfolio NAVs", type: "error" }));
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <section className="dashboard-section w-full">
       
@@ -35,13 +63,28 @@ const Dashboard = () => {
         <div className="card-body p-6">
           
           {/* Header */}
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-primary/10 rounded-lg text-primary">
-              <PieChart size={20} />
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <PieChart size={20} />
+              </div>
+              <h2 className="card-title text-base text-gray-500 uppercase tracking-wide">
+                Portfolio Value
+              </h2>
             </div>
-            <h2 className="card-title text-base text-gray-500 uppercase tracking-wide">
-              Portfolio Value
-            </h2>
+
+            <button
+              type="button"
+              className={`btn btn-ghost btn-sm p-2 min-h-0 h-8 w-8 rounded-full transition-all duration-300 ${isRefreshing ? "opacity-60 cursor-not-allowed grayscale" : "hover:bg-base-200"}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              aria-label="Refresh portfolio"
+            >
+              <RefreshCw
+                size={14}
+                className={`transition-all duration-300 ${isRefreshing ? "animate-spin opacity-80" : "opacity-70"}`}
+              />
+            </button>
           </div>
 
           {/* Main Big Number */}
