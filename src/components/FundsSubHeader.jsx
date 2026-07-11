@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { ArrowUpDown, FunnelPlus } from "lucide-react";
+import { useLocation } from "react-router";
+import { ArrowUpDown, TrendingDown, TrendingUp } from "lucide-react";
 import { sortFunds } from "../store/mf/mfSlice";
+import { formatMoney } from "../utils/utils";
 
 const SubHeader = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { count: activeFundsCount } = useSelector((state) => state.mf.activeData);
+  const funds = useSelector((state) => state.mf.userData?.funds || []);
 
   // Array of label options to cycle through
   const LABEL_OPTIONS = [
@@ -24,6 +28,25 @@ const SubHeader = () => {
 
   const [currentLabelIndex, setCurrentLabelIndex] = useState(0);
 
+  const visibleFunds = useMemo(() => {
+    switch (location.pathname) {
+      case "/holdings":
+        return funds.filter((fund) => parseFloat(fund.costValue));
+      case "/sips":
+        return funds.filter((fund) => fund.isSip === true);
+      case "/favourite":
+        return funds.filter((fund) => fund.isFavorite);
+      default:
+        return funds;
+    }
+  }, [funds, location.pathname]);
+
+  const totalDayChange = useMemo(() => {
+    return visibleFunds.reduce((sum, fund) => sum + (parseFloat(fund.dayChange) || 0), 0);
+  }, [visibleFunds]);
+
+  const isPositiveChange = totalDayChange >= 0;
+
   const handleLabelClick = () => {
     const newIndex = (currentLabelIndex + 1) % LABEL_OPTIONS.length;
     setCurrentLabelIndex(newIndex);
@@ -34,13 +57,15 @@ const SubHeader = () => {
   return (
     <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
       {/* will be used below div for filters*/}
-      <div className="flex items-center funds-count px-2 text-gray-600">
+      <div className="flex items-center gap-2 px-2 text-gray-600">
         <span className="text-xs font-medium">
           {activeFundsCount} Funds
         </span>
-        <span className="px-2">
-            <FunnelPlus size={16} />
-        </span>
+        <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
+        <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${isPositiveChange ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
+          {isPositiveChange ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+          <span>{isPositiveChange ? "+" : ""}{formatMoney(totalDayChange)}</span>
+        </div>
       </div>
 
       {/* Label and Icon - Clickable */}
