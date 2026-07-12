@@ -54,28 +54,6 @@ const calculateXirrEstimate = ({ initialInvestment, finalValue, startDate, endDa
   return Math.pow(terminalValue / investment, 1 / years) - 1;
 };
 
-const getInvestmentStartDate = (fundData, historyData = []) => {
-  const candidates = [
-    fundData?.investedOn,
-    fundData?.purchaseDate,
-    fundData?.addedOn,
-    fundData?.createdAt,
-    fundData?.startDate,
-    fundData?.investmentDate,
-    fundData?.date,
-    ...(historyData || []).map((entry) => entry?.date || entry?.Date).filter(Boolean),
-  ];
-
-  for (const candidate of candidates) {
-    if (!candidate) continue;
-    const parsed = new Date(candidate);
-    if (!Number.isNaN(parsed.getTime())) return parsed;
-  }
-
-  const fallback = new Date();
-  fallback.setFullYear(fallback.getFullYear() - 1);
-  return fallback;
-};
 
 const getDerivedCurrentValue = (fundData) => {
   const storedValue = parseFloat(fundData?.currentMktValue || 0);
@@ -264,7 +242,7 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   }, [chartSeries]);
 
   const sortBy = useSelector((state) => state.mf.sortBy);
-  const investmentDate = useMemo(() => getInvestmentStartDate(currentFund, historyData), [currentFund, historyData]);
+  const investmentDate = useMemo(() => parseInvestmentDate(currentFund), [currentFund]);
   const xirrEstimate = useMemo(() => {
     return calculateXirrEstimate({
       initialInvestment: invested,

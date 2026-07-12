@@ -11,6 +11,14 @@ const generateUniqueKey = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
+const getTodayDateString = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 // eslint-disable-next-line no-unused-vars
 const mockFundDetails = {
   id: "100033",
@@ -38,6 +46,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
     key: generateUniqueKey(),
     units: "",
     isFavorite: false,
+    investedOn: getTodayDateString(),
     // ...mockFundDetails,
     ...fundDetails,
   });
@@ -161,6 +170,23 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                   </div>
                 </div>
 
+                <div className="form-control w-full mt-4">
+                  <label className="label">
+                    <span className="label-text">Investment Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="input input-bordered w-full input-sm"
+                    value={selectedFund?.investedOn || ""}
+                    onChange={(e) =>
+                      setSelectedFund({
+                        ...selectedFund,
+                        investedOn: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
                 <div className="form-control mt-4">
                   <label className="label cursor-pointer justify-start gap-4">
                     <input
@@ -211,6 +237,7 @@ const AddFund = ({ fundDetails = {}, onClose }) => {
                       folio: "",
                       costValue: "",
                       isFavorite: false,
+                      investedOn: getTodayDateString(),
                     });
                   }}
                 />
