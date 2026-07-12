@@ -24,10 +24,11 @@ const parseInvestmentDate = (fundData) => {
 };
 
 const calculateXirrEstimate = ({ initialInvestment, finalValue, startDate, endDate = new Date() }) => {
-  const investment = Math.abs(parseFloat(initialInvestment) || 0);
-  const terminalValue = Math.abs(parseFloat(finalValue) || 0);
+  const investment = parseFloat(initialInvestment) || 0;
+  const terminalValue = parseFloat(finalValue) || 0;
 
-  if (!investment || investment <= 0 || !terminalValue || terminalValue <= 0) return null;
+  if (investment <= 0 || terminalValue < 0) return null;
+  if (terminalValue === 0) return -1.0;
 
   const start = startDate instanceof Date ? startDate : new Date(startDate);
   const end = endDate instanceof Date ? endDate : new Date(endDate);
@@ -37,34 +38,7 @@ const calculateXirrEstimate = ({ initialInvestment, finalValue, startDate, endDa
   const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
   const years = totalDays / 365.25;
 
-  const solveRate = (rate) => {
-    return -investment / Math.pow(1 + rate, 0) + terminalValue / Math.pow(1 + rate, years);
-  };
-
-  let low = -0.999;
-  let high = 10;
-  let lowValue = solveRate(low);
-  let highValue = solveRate(high);
-
-  if (lowValue === 0) return low;
-  if (highValue === 0) return high;
-  if (lowValue > 0 && highValue > 0) return null;
-  if (lowValue < 0 && highValue < 0) return null;
-
-  for (let index = 0; index < 200; index += 1) {
-    const mid = (low + high) / 2;
-    const midValue = solveRate(mid);
-
-    if (Math.abs(midValue) < 1e-8) return mid;
-
-    if (midValue > 0) {
-      high = mid;
-    } else {
-      low = mid;
-    }
-  }
-
-  return (low + high) / 2;
+  return Math.pow(terminalValue / investment, 1 / years) - 1;
 };
 
 const getDerivedCurrentValue = (fundData) => {
