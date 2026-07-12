@@ -14,6 +14,54 @@ import { formatMoney } from "../../utils/utils.js";
 import { MF_NAV_URL, fetchFundDetails } from "../../utils/api.js";
 import { getCachedFund } from "../../services/db";
 
+const parseInvestmentDate = (fundData) => {
+  const candidates = [
+    fundData?.investedOn,
+    fundData?.purchaseDate,
+    fundData?.addedOn,
+    fundData?.createdAt,
+    fundData?.startDate,
+    fundData?.investmentDate,
+    fundData?.date,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const parsed = new Date(candidate);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  const fallback = new Date();
+  fallback.setFullYear(fallback.getFullYear() - 1);
+  return fallback;
+};
+
+const calculateXirrEstimate = ({ initialInvestment, finalValue, gainPercentage }) => {
+  const investment = Math.abs(parseFloat(initialInvestment) || 0);
+  const terminalValue = Math.abs(parseFloat(finalValue) || 0);
+
+  if (!investment || investment <= 0) return null;
+
+  const normalizedGain = parseFloat(gainPercentage);
+  if (Number.isFinite(normalizedGain) && normalizedGain !== 0) {
+    return normalizedGain / 100;
+  }
+
+  if (!terminalValue || terminalValue <= 0) return null;
+  return terminalValue / investment - 1;
+};
+
+const getDerivedCurrentValue = (fundData) => {
+  const storedValue = parseFloat(fundData?.currentMktValue || 0);
+  const unitsValue = parseFloat(fundData?.units || 0) * parseFloat(fundData?.nav || 0);
+  const gainValue = parseFloat(fundData?.costValue || 0) * (1 + (parseFloat(fundData?.gainLossPercentage || 0) / 100));
+
+  if (Number.isFinite(storedValue) && storedValue > 0) return storedValue;
+  if (Number.isFinite(unitsValue) && unitsValue > 0) return unitsValue;
+  if (Number.isFinite(gainValue) && gainValue > 0) return gainValue;
+  return 0;
+};
+
 const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(index);
@@ -27,7 +75,7 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   const fundList = funds.length > 0 ? funds : [fund];
   const currentFund = fundList[activeIndex] || fund;
   const invested = parseFloat(currentFund.costValue || 0);
-  const current = parseFloat(currentFund.currentMktValue || 0);
+  const current = getDerivedCurrentValue(currentFund);
   const totalPL = parseFloat(currentFund.gainLoss || 0);
   const totalPLPercent = parseFloat(currentFund.gainLossPercentage || 0);
   const code = currentFund.code;
@@ -190,9 +238,21 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   }, [chartSeries]);
 
   const sortBy = useSelector((state) => state.mf.sortBy);
+  const investmentDate = useMemo(() => parseInvestmentDate(currentFund), [currentFund]);
+  const xirrEstimate = useMemo(() => {
+    return calculateXirrEstimate({
+      initialInvestment: invested,
+      finalValue: current,
+      gainPercentage: currentFund?.gainLossPercentage,
+    });
+  }, [current, invested, currentFund?.gainLossPercentage]);
 
   const getSortValue = () => {
-    if (!sortBy || (sortBy !== "units" && sortBy !== "dayChange")) return null;
+    if (!sortBy || !["units", "dayChange", "xirr"].includes(sortBy)) return null;
+
+    if (sortBy === "xirr") {
+      return xirrEstimate == null ? "—" : `${xirrEstimate >= 0 ? "+" : ""}${(xirrEstimate * 100).toFixed(2)}%`;
+    }
 
     const value = currentFund[sortBy];
     if (value == null || value === "") return null;
@@ -287,59 +347,62 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
                 {currentFund.schemeType || "Growth"}
               </span>
               {sortValue && (
-                <span className={`text-sm font-semibold tracking-wide whitespace-nowrap ${sortBy === "dayChange" ? getColorClass(parseFloat(currentFund.dayChange || 0)) : "text-primary"}`}>
+                <span className={`text-sm font-semibold tracking-wide whitespace-nowrap ${sortBy === "dayChange" || sortBy === "xirr" ? getColorClass(xirrEstimate ?? parseFloat(currentFund.dayChange || 0)) : "text-primary"}`}>
                   {sortValue}
                 </span>
               )}
             </div>
           </div>
 
-          {/* ROW 2: The Big Three */}
-          <div className="grid grid-cols-3 gap-2 items-center">
-            {/* 1. Invested */}
-            <div className="text-left">
+          {/* ROW 2: Summary Metrics */}
+          <div className="grid grid-cols-2 gap-2 items-start">
+            <div className="min-w-0 rounded-lg bg-gray-50/70 p-2">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Invested
               </p>
-              <p className="text-gray-600 text-xs leading-none">
+              <p className="text-gray-700 text-xs leading-tight">
                 {formatMoney(invested)}
               </p>
             </div>
 
-            {/* 2. Current Value */}
-            <div className="text-center">
+            <div className="min-w-0 rounded-lg bg-gray-50/70 p-2">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Current
               </p>
-              <p className="text-gray-900 text-xs leading-none">
+              <p className="text-gray-900 text-xs leading-tight">
                 {formatMoney(current)}
               </p>
             </div>
 
-
-            {/* 3. Total Returns */}
-            <div className="text-right">
+            <div className="min-w-0 rounded-lg bg-gray-50/70 p-2">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
                 Returns
               </p>
-              <div
-                className={`flex items-baseline justify-end gap-1 whitespace-nowrap leading-none ${getColorClass(totalPL)}`}
-              >
-                <span className="text-xs">
+              <div className={`flex flex-wrap items-baseline justify-start gap-1 text-xs leading-tight ${getColorClass(totalPL)}`}>
+                <span>
                   {isProfit ? "+" : ""}
                   {formatMoney(totalPL)}
                 </span>
-                <span className="font-medium text-xs opacity-80">
+                <span className="font-medium opacity-80">
                   ({Math.abs(totalPLPercent).toFixed(2)}%)
                 </span>
               </div>
             </div>
+
+            <div className="min-w-0 rounded-lg bg-gray-50/70 p-2">
+              <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
+                XIRR
+              </p>
+              <p className={`text-xs font-semibold leading-tight ${getColorClass(xirrEstimate ?? 0)}`}>
+                {xirrEstimate == null ? "—" : `${xirrEstimate >= 0 ? "+" : ""}${(xirrEstimate * 100).toFixed(2)}%`}
+              </p>
+            </div>
           </div>
         </div>
 
-          <div className="flex justify-center pb-1 pt-2 text-[11px] text-gray-400">
+          {/* <div className="flex justify-center pb-1 pt-2 text-[11px] text-gray-400">
             Tap for full details
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -409,6 +472,12 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
                       </p>
                     </div>
                   ))}
+                </div>
+                <div className="mt-2 flex items-center justify-between rounded-lg bg-gray-50 px-2 py-1.5 text-[11px]">
+                  <span className="font-medium text-gray-500">Est. XIRR</span>
+                  <span className={`font-semibold ${getColorClass(xirrEstimate ?? 0)}`}>
+                    {xirrEstimate == null ? "—" : `${xirrEstimate >= 0 ? "+" : ""}${(xirrEstimate * 100).toFixed(2)}%`}
+                  </span>
                 </div>
               </div>
 

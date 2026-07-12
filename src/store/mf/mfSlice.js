@@ -1,6 +1,54 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { saveUserData } from "../../utils/storage.js";
 
+const parseInvestmentDate = (fundData) => {
+  const candidates = [
+    fundData?.investedOn,
+    fundData?.purchaseDate,
+    fundData?.addedOn,
+    fundData?.createdAt,
+    fundData?.startDate,
+    fundData?.investmentDate,
+    fundData?.date,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const parsed = new Date(candidate);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  const fallback = new Date();
+  fallback.setFullYear(fallback.getFullYear() - 1);
+  return fallback;
+};
+
+const calculateXirrEstimate = ({ initialInvestment, finalValue, gainPercentage }) => {
+  const investment = Math.abs(parseFloat(initialInvestment) || 0);
+  const terminalValue = Math.abs(parseFloat(finalValue) || 0);
+
+  if (!investment || investment <= 0) return null;
+
+  const normalizedGain = parseFloat(gainPercentage);
+  if (Number.isFinite(normalizedGain) && normalizedGain !== 0) {
+    return normalizedGain / 100;
+  }
+
+  if (!terminalValue || terminalValue <= 0) return null;
+  return terminalValue / investment - 1;
+};
+
+const getDerivedCurrentValue = (fundData) => {
+  const storedValue = parseFloat(fundData?.currentMktValue || 0);
+  const unitsValue = parseFloat(fundData?.units || 0) * parseFloat(fundData?.nav || 0);
+  const gainValue = parseFloat(fundData?.costValue || 0) * (1 + (parseFloat(fundData?.gainLossPercentage || 0) / 100));
+
+  if (Number.isFinite(storedValue) && storedValue > 0) return storedValue;
+  if (Number.isFinite(unitsValue) && unitsValue > 0) return unitsValue;
+  if (Number.isFinite(gainValue) && gainValue > 0) return gainValue;
+  return 0;
+};
+
 const initialState = {
   userData: {
     name: "MF User",
@@ -84,8 +132,27 @@ const mfSlice = createSlice({
 
       // Sort the funds array based on the field
       state.userData.funds.sort((a, b) => {
-        const aVal = isNaN(a[fieldKey]) ? a[fieldKey] : parseFloat(a[fieldKey]);
-        const bVal = isNaN(b[fieldKey]) ? b[fieldKey] : parseFloat(b[fieldKey]);
+        let aVal = a[fieldKey];
+        let bVal = b[fieldKey];
+
+        if (fieldKey === "xirr") {
+          const aXirr = calculateXirrEstimate({
+            initialInvestment: a.costValue,
+            finalValue: getDerivedCurrentValue(a),
+            gainPercentage: a.gainLossPercentage,
+          });
+          const bXirr = calculateXirrEstimate({
+            initialInvestment: b.costValue,
+            finalValue: getDerivedCurrentValue(b),
+            gainPercentage: b.gainLossPercentage,
+          });
+
+          aVal = aXirr == null ? null : aXirr;
+          bVal = bXirr == null ? null : bXirr;
+        } else {
+          aVal = isNaN(a[fieldKey]) ? a[fieldKey] : parseFloat(a[fieldKey]);
+          bVal = isNaN(b[fieldKey]) ? b[fieldKey] : parseFloat(b[fieldKey]);
+        }
 
         // Handle null/undefined values
         if (aVal == null && bVal == null) return 0;
