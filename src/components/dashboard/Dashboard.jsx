@@ -233,7 +233,7 @@ const Dashboard = () => {
       
       {/* Portfolio Value Card */}
       <div className="card w-full bg-base-100 shadow-xl border border-base-200 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-default">
-        <div className="card-body p-6">
+        <div className="card-body p-4">
           
           {/* Header */}
           <div className="flex items-center justify-between gap-2 mb-2">
@@ -261,7 +261,7 @@ const Dashboard = () => {
           </div>
 
           {/* Main Big Number */}
-          <div className="mb-6">
+          <div className="banner">
             <h1 className="text-4xl font-extrabold text-base-content">
               {formatMoney(summary.totalCurrentMktValue)}
             </h1>
@@ -278,7 +278,7 @@ const Dashboard = () => {
           <div className="divider my-0"></div>
 
           {/* Secondary Stats Grid */}
-          <div className="grid grid-cols-2 gap-4 mt-2">
+          <div className="grid grid-cols-2 gap-4 ">
             
             {/* Invested Amount */}
             <div className="flex flex-col">
@@ -328,11 +328,11 @@ const Dashboard = () => {
       </div>
 
       {/* Historical Performance Chart Card */}
-      <div className="card w-full bg-base-100 shadow-xl border border-base-200 mt-6 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-default">
-        <div className="card-body p-6">
+      <div className="card w-full bg-base-100 shadow-xl border border-base-200 mt-2 transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-default">
+        <div className="card-body p-4">
           
           {/* Chart Header */}
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="graph-header">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-lg text-primary">
                 <Activity size={20} />
@@ -341,22 +341,17 @@ const Dashboard = () => {
                 <h3 className="font-bold text-base text-base-content">
                   Portfolio Trend
                 </h3>
-                <p className="text-xs text-gray-400">Aggregated performance (1M)</p>
+                {activePoint &&
+                  <p className="text-xs text-gray-400">
+                    {activePoint.formattedDate} · {formatMoney(activePoint.value)}
+                  </p>
+                }
               </div>
             </div>
-
-            {/* Hover details shown in header directly (similar to FundCard design) */}
-            {activePoint && (
-              <div className="text-right">
-                <span className="font-extrabold text-primary text-sm sm:text-base whitespace-nowrap">
-                  {activePoint.formattedDate} · {formatMoney(activePoint.value)}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Chart Body */}
-          <div className="relative w-full h-[240px] flex items-center justify-center bg-base-50 rounded-xl overflow-hidden">
+          <div className="relative w-full flex items-center justify-center bg-base-50 rounded-xl overflow-hidden">
             {isLoadingChart ? (
               <div className="flex flex-col items-center gap-2 text-gray-400">
                 <span className="loading loading-spinner loading-md text-primary"></span>
