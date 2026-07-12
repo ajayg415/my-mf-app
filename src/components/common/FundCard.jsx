@@ -1,43 +1,54 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import {
   TrendingUp,
   TrendingDown,
   Clock,
   Edit2,
-  ChevronDown,
-  ChevronUp,
+  X,
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatMoney } from "../../utils/utils.js";
-import { MF_NAV_URL } from "../../utils/api.js";
+import { MF_NAV_URL, fetchFundDetails } from "../../utils/api.js";
+import { getCachedFund } from "../../services/db";
 
-const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(index);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [historyData, setHistoryData] = useState([]);
+  const [selectedRange, setSelectedRange] = useState("1M");
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [activePointIndex, setActivePointIndex] = useState(null);
 
   // 1. Safe parsing & Defaults
-  const invested = parseFloat(fund.costValue || 0);
-  const current = parseFloat(fund.currentMktValue || 0);
-  const totalPL = parseFloat(fund.gainLoss || 0);
-  const totalPLPercent = parseFloat(fund.gainLossPercentage || 0);
-  const code = fund.code;
-  const nav = parseFloat(fund.nav || 0);
+  const fundList = funds.length > 0 ? funds : [fund];
+  const currentFund = fundList[activeIndex] || fund;
+  const invested = parseFloat(currentFund.costValue || 0);
+  const current = parseFloat(currentFund.currentMktValue || 0);
+  const totalPL = parseFloat(currentFund.gainLoss || 0);
+  const totalPLPercent = parseFloat(currentFund.gainLossPercentage || 0);
+  const code = currentFund.code;
+  const nav = parseFloat(currentFund.nav || 0);
 
   // Metrics for Expanded View
   const metrics = [
     {
       label: "1 Day",
-      val: parseFloat(fund.dayChange || 0),
-      pct: parseFloat(fund.dayChangePercentage || 0),
+      val: parseFloat(currentFund.dayChange || 0),
+      pct: parseFloat(currentFund.dayChangePercentage || 0),
     },
     {
       label: "1 Week",
-      val: parseFloat(fund.weekChange || 0),
-      pct: parseFloat(fund.weekChangePercentage || 0),
+      val: parseFloat(currentFund.weekChange || 0),
+      pct: parseFloat(currentFund.weekChangePercentage || 0),
     },
     {
       label: "1 Month",
-      val: parseFloat(fund.monthChange || 0),
-      pct: parseFloat(fund.monthChangePercentage || 0),
+      val: parseFloat(currentFund.monthChange || 0),
+      pct: parseFloat(currentFund.monthChangePercentage || 0),
     },
   ];
 
@@ -45,12 +56,145 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
   const getColorClass = (val) => (val >= 0 ? "text-success" : "text-error");
   const getBgClass = (val) => (val >= 0 ? "bg-success/10" : "bg-error/10");
 
+  const rangeOptions = [{ label: "1M", days: 30 }];
+
+  useEffect(() => {
+    if (!isModalOpen || !currentFund?.code) return;
+
+    let ignore = false;
+
+    const loadHistory = async () => {
+      setIsHistoryLoading(true);
+      try {
+        const cachedHistory = await getCachedFund(currentFund.code);
+        if (!ignore && cachedHistory?.data?.length) {
+          setHistoryData(cachedHistory.data);
+        } else if (!ignore) {
+          const freshHistory = await fetchFundDetails(currentFund.code, false);
+          if (!ignore && freshHistory?.data?.length) {
+            setHistoryData(freshHistory.data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load fund history", error);
+      } finally {
+        if (!ignore) {
+          setIsHistoryLoading(false);
+        }
+      }
+    };
+
+    loadHistory();
+
+    return () => {
+      ignore = true;
+    };
+  }, [currentFund?.code, isModalOpen]);
+
+  const chartSeries = useMemo(() => {
+    if (!historyData.length) return [];
+
+    const orderedData = [...historyData].reverse();
+    const selectedDays = rangeOptions.find((option) => option.label === selectedRange)?.days || 30;
+    const maxPoints = selectedDays > 90 ? 120 : 60;
+    const startIndex = Math.max(0, orderedData.length - Math.min(selectedDays, orderedData.length));
+    let sliced = orderedData.slice(startIndex);
+
+    if (sliced.length > maxPoints) {
+      const step = Math.ceil(sliced.length / maxPoints);
+      sliced = sliced.filter((_, index) => index % step === 0 || index === sliced.length - 1);
+    }
+
+    const values = sliced.map((entry) => parseFloat(entry.nav) || 0).filter((value) => value > 0);
+    if (!values.length) return [];
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+
+    return sliced.map((entry, index) => {
+      const value = parseFloat(entry.nav) || 0;
+      const x = sliced.length === 1 ? 50 : (index / (sliced.length - 1)) * 100;
+      const y = sliced.length === 1 ? 50 : 100 - ((value - min) / range) * 80 - 10;
+      const dateValue = entry.date || entry.Date || "";
+      const formattedDate = (() => {
+        const rawDate = String(dateValue).trim();
+        if (!rawDate) return "N/A";
+        const normalized = rawDate.includes("-") && rawDate.split("-")[0].length === 2 ? rawDate.split("-").reverse().join("-") : rawDate;
+        const parsed = new Date(normalized);
+        if (Number.isNaN(parsed.getTime())) return rawDate;
+        return parsed.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      })();
+
+      return { ...entry, value, x, y, formattedDate };
+    });
+  }, [historyData, rangeOptions, selectedRange]);
+
+  const chartPath = useMemo(() => {
+    if (!chartSeries.length) return "";
+    return chartSeries
+      .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)},${point.y.toFixed(2)}`)
+      .join(" ");
+  }, [chartSeries]);
+
+  const activePoint = chartSeries[activePointIndex ?? chartSeries.length - 1] || null;
+  const yTicks = useMemo(() => {
+    if (!chartSeries.length) return [];
+
+    const values = chartSeries.map((point) => point.value).filter((value) => Number.isFinite(value));
+    if (!values.length) return [];
+
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const rawRange = max - min || Math.max(1, Math.abs(max) || 1);
+    const safeRange = Math.max(rawRange, 0.01);
+    const steps = 4;
+
+    return Array.from({ length: steps + 1 }, (_, index) => {
+      const ratio = index / steps;
+      const value = max - safeRange * ratio;
+      return {
+        value,
+        label: `₹${value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        y: 90 - ratio * 80,
+      };
+    });
+  }, [chartSeries]);
+
+  const xTicks = useMemo(() => {
+    if (!chartSeries.length) return [];
+
+    const saturdayPoints = chartSeries.filter((point) => {
+      const rawDate = String(point.date || point.Date || "").trim();
+      if (!rawDate) return false;
+      const normalized = rawDate.includes("-") && rawDate.split("-")[0].length === 2 ? rawDate.split("-").reverse().join("-") : rawDate;
+      const parsed = new Date(normalized);
+      return !Number.isNaN(parsed.getTime()) && parsed.getDay() === 6;
+    });
+
+    const sourcePoints = saturdayPoints.length >= 4 ? saturdayPoints : chartSeries;
+    const desiredCount = 4;
+
+    if (!sourcePoints.length) return [];
+
+    if (sourcePoints.length <= desiredCount) {
+      return sourcePoints.map((point, index) => ({ ...point, xPos: 10 + (index / Math.max(1, sourcePoints.length - 1)) * 82 }));
+    }
+
+    return Array.from({ length: desiredCount }, (_, index) => {
+      const ratio = index / (desiredCount - 1);
+      const targetIndex = Math.round(ratio * (sourcePoints.length - 1));
+      const point = sourcePoints[targetIndex];
+      return { ...point, xPos: 10 + ratio * 82 };
+    });
+  }, [chartSeries]);
+
   const sortBy = useSelector((state) => state.mf.sortBy);
 
   const getSortValue = () => {
     if (!sortBy || (sortBy !== "units" && sortBy !== "dayChange")) return null;
 
-    const value = fund[sortBy];
+    const value = currentFund[sortBy];
     if (value == null || value === "") return null;
 
     if (sortBy === "dayChange") {
@@ -67,17 +211,62 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
 
   const sortValue = getSortValue();
 
+  const handleCardClick = () => {
+    setActiveIndex(index);
+    setIsModalOpen(true);
+    onClick?.();
+  };
+
+  const handlePrevFund = () => {
+    setActiveIndex((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNextFund = () => {
+    setActiveIndex((prev) => Math.min(fundList.length - 1, prev + 1));
+  };
+
+  const handleTouchStart = (event) => {
+    setTouchStartX(event.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (event) => {
+    if (touchStartX === null) return;
+    const delta = event.changedTouches[0].clientX - touchStartX;
+    if (delta > 50) {
+      handlePrevFund();
+    } else if (delta < -50) {
+      handleNextFund();
+    }
+    setTouchStartX(null);
+  };
+
+  useEffect(() => {
+    setActivePointIndex(chartSeries.length - 1);
+  }, [chartSeries.length, selectedRange, currentFund?.code]);
+
   return (
-    <div className="card bg-base-100 shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md">
-      <div className="card-body p-0">
-        {/* --- MAIN CARD CONTENT (Always Visible) --- */}
-        <div className="p-4 cursor-pointer pb-1" onClick={() => setIsOpen(!isOpen)}>
+    <>
+      <div className="card bg-base-100 shadow-sm border border-gray-100 transition-all duration-200 hover:shadow-md">
+        <div className="card-body p-0">
+          {/* --- MAIN CARD CONTENT (Always Visible) --- */}
+          <div
+            className="p-4 cursor-pointer pb-1"
+            onClick={handleCardClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleCardClick();
+              }
+            }}
+          >
           
           {/* ROW 1: Identity */}
           <div className="flex flex-col mb-4">
             <div className="flex justify-between items-start gap-2">
               <h3 className="font-bold text-gray-800 leading-tight text-sm md:text-base line-clamp-1 break-words capitalize">
-                {fund.name}
+                {currentFund.name}
               </h3>
 
               {hasEdit && (
@@ -95,10 +284,10 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
 
             <div className="mt-1 flex items-center justify-between gap-2">
               <span className="badge badge-xs badge-ghost text-[10px] uppercase tracking-wider font-semibold text-gray-500">
-                {fund.schemeType || "Growth"}
+                {currentFund.schemeType || "Growth"}
               </span>
               {sortValue && (
-                <span className={`text-sm font-semibold tracking-wide whitespace-nowrap ${sortBy === "dayChange" ? getColorClass(parseFloat(fund.dayChange || 0)) : "text-primary"}`}>
+                <span className={`text-sm font-semibold tracking-wide whitespace-nowrap ${sortBy === "dayChange" ? getColorClass(parseFloat(currentFund.dayChange || 0)) : "text-primary"}`}>
                   {sortValue}
                 </span>
               )}
@@ -148,87 +337,178 @@ const FundCard = ({ fund, onClick, onEdit, hasEdit = true }) => {
           </div>
         </div>
 
-        {/* --- EXPANDABLE SECTION --- */}
-        <div
-          className={`overflow-hidden transition-[max-height] duration-300 ease-in-out border-t border-dashed border-gray-100 bg-gray-50/30 ${isOpen ? "max-h-[500px]" : "max-h-0"}`}
-        >
-          <div className="px-3 py-1 flex flex-col gap-2 text-xs">
-            
-            {/* STATIC INFO GROUP */}
-            <div className="flex flex-col">
-              {/* Scheme Code */}
-              <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
-                <span className="text-xs font-medium text-gray-500">Scheme Code</span>
-                <a
-                  href={`${MF_NAV_URL}/${code}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono font-bold text-primary hover:underline"
-                >
-                  {code}
-                </a>
-              </div>
-
-              {/* Current NAV */}
-               <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
-                  <span className="text-xs font-medium text-gray-500">Current NAV</span>
-                  <span className="text-xs font-mono font-bold text-gray-600">₹{nav.toFixed(2)}</span>
-               </div>
-
-               {/* Units Held */}
-               <div className="flex justify-between items-center py-0.5 px-2 border-b border-gray-200/50">
-                 <span className="text-xs font-medium text-gray-500">Units Held</span>
-                 <span className="text-xs font-mono font-bold text-gray-600">{fund.units}</span>
-               </div>
-            </div>
-
-            {/* PERFORMANCE BLOCK (HIGHLIGHTED) */}
-            <div className="bg-base-200/60 rounded-lg p-2 border border-base-200 flex flex-col">
-                {/* Optional Header for the block */}
-                <div className="text-[10px] uppercase font-bold text-gray-400 px-1 tracking-wider">
-                   Recent Performance
-                </div>
-
-                {metrics.map((m, idx) => (
-                  <div
-                    key={idx}
-                    className="flex justify-between items-center px-2 rounded hover:bg-white transition-colors"
-                  >
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock size={12} className="opacity-70" />
-                      <span className="text-xs font-medium">{m.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-xs font-bold ${getColorClass(m.val)}`}>
-                        {m.val > 0 ? "+" : ""}
-                        {formatMoney(m.val)}
-                      </span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${getBgClass(m.val)} ${getColorClass(m.val)}`}
-                      >
-                        {Math.abs(m.pct).toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
+          <div className="flex justify-center pb-1 pt-2 text-[11px] text-gray-400">
+            Tap for full details
           </div>
         </div>
-
-        {/* Expand/Collapse Handle */}
-        <div
-          className="flex justify-center pb-1 cursor-pointer hover:bg-gray-100/50"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? (
-            <ChevronUp size={14} className="text-gray-300" />
-          ) : (
-            <ChevronDown size={14} className="text-gray-300" />
-          )}
-        </div>
       </div>
-    </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+          <div className="w-full max-w-3xl rounded-2xl bg-base-100 shadow-2xl border border-base-200 max-h-[88vh] overflow-y-auto">
+            <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-3 py-3">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-gray-400">Fund Details</p>
+                <h3 className="truncate text-sm font-semibold text-gray-800">{currentFund.name}</h3>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm h-8 w-8 rounded-full p-0"
+                  onClick={handlePrevFund}
+                  disabled={activeIndex === 0}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm h-8 w-8 rounded-full p-0"
+                  onClick={handleNextFund}
+                  disabled={activeIndex === fundList.length - 1}
+                >
+                  <ChevronRight size={16} />
+                </button>
+                <div className="rounded-full bg-gray-50 px-2 py-1 text-[10px] font-semibold text-gray-500">
+                  {activeIndex + 1}/{fundList.length}
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-xs h-8 w-8 rounded-full p-0"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-3 p-3 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-base-200/60 p-2.5">
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400">Invested</p>
+                  <p className="mt-1 font-semibold text-gray-800">{formatMoney(invested)}</p>
+                </div>
+                <div className="rounded-xl bg-base-200/60 p-2.5">
+                  <p className="text-[10px] uppercase tracking-wide text-gray-400">Current Value</p>
+                  <p className="mt-1 font-semibold text-gray-800">{formatMoney(current)}</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-white p-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium text-gray-500">Total Return</span>
+                  <span className={`text-sm font-semibold ${getColorClass(totalPL)}`}>
+                    {isProfit ? "+" : ""}{formatMoney(totalPL)} ({Math.abs(totalPLPercent).toFixed(2)}%)
+                  </span>
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+                  {metrics.map((metric, idx) => (
+                    <div key={idx} className="rounded-lg bg-gray-50 p-1.5">
+                      <p className="text-[10px] uppercase tracking-wide text-gray-400">{metric.label}</p>
+                      <p className={`mt-1 text-[11px] font-semibold ${getColorClass(metric.val)}`}>
+                        {metric.val > 0 ? "+" : ""}{formatMoney(metric.val)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-white p-2.5 space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] text-gray-600">
+                  <span className="font-medium text-gray-500">1M NAV history</span>
+                  <span className="font-semibold text-gray-800">
+                    {activePoint ? `${activePoint.formattedDate} · ₹${parseFloat(activePoint.value || 0).toFixed(2)}` : `Current ₹${nav.toFixed(2)}`}
+                  </span>
+                </div>
+
+                {isHistoryLoading ? (
+                  <div className="flex h-20 items-center justify-center rounded-xl bg-gray-50 text-[11px] text-gray-400">
+                    Loading chart...
+                  </div>
+                ) : chartPath ? (
+                  <div className="space-y-1.5">
+                    <div className="w-full overflow-hidden rounded-2xl bg-gray-50 p-2">
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-44 w-full sm:h-48" role="img" aria-label="NAV history chart">
+                        <line x1="8" y1="90" x2="92" y2="90" stroke="#d1d5db" strokeWidth="0.6" />
+                        <line x1="8" y1="10" x2="8" y2="90" stroke="#d1d5db" strokeWidth="0.6" />
+                        {yTicks.map((tick, index) => (
+                          <g key={`y-${index}`}>
+                            <line x1="8" y1={tick.y} x2="92" y2={tick.y} stroke="#f3f4f6" strokeWidth="0.4" />
+                            <text x="2" y={tick.y + 1} fontSize="3.2" textAnchor="end" fill="#6b7280">
+                              {tick.label}
+                            </text>
+                          </g>
+                        ))}
+                        {xTicks.map((point, index) => (
+                          <text key={`x-${index}`} x={point.xPos} y="98" fontSize="3.2" textAnchor="middle" fill="#6b7280">
+                            {point.formattedDate}
+                          </text>
+                        ))}
+                        <path d={chartPath} fill="none" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        {chartSeries.map((point, index) => (
+                          <circle
+                            key={`${point.date}-${index}`}
+                            cx={point.x}
+                            cy={point.y}
+                            r="1.4"
+                            fill={activePointIndex === index ? "#1d4ed8" : "#2563eb"}
+                            stroke="#fff"
+                            strokeWidth="0.4"
+                            onMouseEnter={() => setActivePointIndex(index)}
+                            onMouseLeave={() => setActivePointIndex(null)}
+                            onTouchStart={() => setActivePointIndex(index)}
+                            onTouchEnd={() => setActivePointIndex(null)}
+                            onClick={() => setActivePointIndex(index)}
+                          />
+                        ))}
+                      </svg>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex h-24 items-center justify-center rounded-xl bg-gray-50 text-[11px] text-gray-400">
+                    No history available yet
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-gray-100 bg-white p-2.5 space-y-1">
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">Scheme Code</span>
+                  <a
+                    href={`${MF_NAV_URL}/${code}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                  >
+                    {code}
+                    <ExternalLink size={12} />
+                  </a>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">Current NAV</span>
+                  <span className="text-xs font-semibold text-gray-700">₹{nav.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">Units Held</span>
+                  <span className="text-xs font-semibold text-gray-700">{parseFloat(fund.units || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">Folio</span>
+                  <span className="text-xs font-semibold text-gray-700">{currentFund.folio || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">ISIN</span>
+                  <span className="text-xs font-semibold text-gray-700">{currentFund.isin || "—"}</span>
+                </div>
+                <div className="flex items-center justify-between py-0.5">
+                  <span className="text-xs font-medium text-gray-500">Type</span>
+                  <span className="text-xs font-semibold text-gray-700">{currentFund.schemeType || "Growth"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

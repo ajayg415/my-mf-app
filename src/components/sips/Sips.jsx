@@ -19,7 +19,13 @@ const Sips = () => {
             {sipFunds && sipFunds.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sipFunds.map((fund, index) => (
-                        <FundCard key={`${fund.isin}-${index}`} fund={fund} onEdit={() => setActiveFund(fund)} />
+                        <FundCard
+                            key={`${fund.isin}-${index}`}
+                            fund={fund}
+                            funds={sipFunds}
+                            index={index}
+                            onEdit={() => setActiveFund(fund)}
+                        />
                     ))}
                 </div>
             ) : (
