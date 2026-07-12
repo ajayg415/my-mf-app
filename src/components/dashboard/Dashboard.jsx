@@ -176,6 +176,41 @@ const Dashboard = () => {
     setActivePointIndex(null);
   };
 
+  const handleTouchMove = (e) => {
+    if (!chartConfig || !chartConfig.points.length || !svgRef.current) return;
+    
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
+    const touch = e.touches[0];
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const mouseX = touch.clientX - svgRect.left;
+
+    // Convert screen coordinates to SVG viewBox coords
+    const localX = (mouseX / svgRect.width) * chartConfig.width;
+
+    let closestIndex = 0;
+    let minDiff = Infinity;
+    chartConfig.points.forEach((point, index) => {
+      const diff = Math.abs(point.x - localX);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = index;
+      }
+    });
+
+    setActivePointIndex(closestIndex);
+  };
+
+  const handleTouchStart = (e) => {
+    handleTouchMove(e);
+  };
+
+  const handleTouchEnd = () => {
+    setActivePointIndex(null);
+  };
+
   const activePoint = useMemo(() => {
     if (!chartConfig || !chartConfig.points.length) return null;
     return chartConfig.points[activePointIndex ?? chartConfig.points.length - 1];
@@ -369,9 +404,12 @@ const Dashboard = () => {
                 <svg
                   ref={svgRef}
                   viewBox={`0 0 ${chartConfig.width} ${chartConfig.height}`}
-                  className="w-full h-full overflow-visible select-none"
+                  className="w-full h-full overflow-visible select-none touch-none"
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <defs>
                     {/* Line Gradient */}
