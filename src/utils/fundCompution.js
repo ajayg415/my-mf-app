@@ -158,3 +158,90 @@ export const computeFundsSummary = (funds) => {
     }
   );
 };
+
+export const computeHistoricalPortfolio = (funds, histories) => {
+  const fundChronHistories = {};
+  const dateMap = {};
+
+  funds.forEach((fund) => {
+    const code = fund.code;
+    if (!code) return;
+    const rawHistory = histories[code] || [];
+
+    const parsedEntries = rawHistory.map((entry) => {
+      const dateStr = entry.date || entry.Date || "";
+      const rawDate = dateStr.trim();
+      if (!rawDate) return null;
+
+      const normalized = rawDate.includes("-") && rawDate.split("-")[0].length === 2
+        ? rawDate.split("-").reverse().join("-")
+        : rawDate;
+      const dateObj = new Date(normalized);
+
+      if (Number.isNaN(dateObj.getTime())) return null;
+
+      return {
+        dateStr: rawDate,
+        dateObj,
+        nav: parseFloat(entry.nav) || 0,
+      };
+    }).filter(Boolean);
+
+    // Sort oldest first
+    parsedEntries.sort((a, b) => a.dateObj - b.dateObj);
+    fundChronHistories[code] = parsedEntries;
+
+    parsedEntries.forEach((entry) => {
+      if (!dateMap[entry.dateStr]) {
+        dateMap[entry.dateStr] = entry.dateObj;
+      }
+    });
+  });
+
+  const sortedDates = Object.entries(dateMap)
+    .map(([dateStr, dateObj]) => ({ dateStr, dateObj }))
+    .sort((a, b) => a.dateObj - b.dateObj);
+
+  // Take the last 30 business days/dates
+  const activeDates = sortedDates.slice(-30);
+
+  const portfolioHistory = activeDates.map(({ dateStr, dateObj }) => {
+    let totalValue = 0;
+
+    funds.forEach((fund) => {
+      const code = fund.code;
+      if (!code) return;
+      const history = fundChronHistories[code] || [];
+      const units = parseFloat(fund.units) || 0;
+
+      // Find the last entry on or before the current dateObj
+      let selectedNav = 0;
+      for (let i = history.length - 1; i >= 0; i--) {
+        if (history[i].dateObj <= dateObj) {
+          selectedNav = history[i].nav;
+          break;
+        }
+      }
+
+      if (selectedNav === 0 && history.length > 0) {
+        selectedNav = history[0].nav;
+      }
+
+      totalValue += units * selectedNav;
+    });
+
+    const formattedDate = dateObj.toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+    });
+
+    return {
+      date: dateStr,
+      value: totalValue,
+      formattedDate,
+    };
+  });
+
+  return portfolioHistory;
+};
+

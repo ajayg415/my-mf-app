@@ -36,19 +36,71 @@ const parseInvestmentDate = (fundData) => {
   return fallback;
 };
 
-const calculateXirrEstimate = ({ initialInvestment, finalValue, gainPercentage }) => {
+const calculateXirrEstimate = ({ initialInvestment, finalValue, startDate, endDate = new Date() }) => {
   const investment = Math.abs(parseFloat(initialInvestment) || 0);
   const terminalValue = Math.abs(parseFloat(finalValue) || 0);
 
-  if (!investment || investment <= 0) return null;
+  if (!investment || investment <= 0 || !terminalValue || terminalValue <= 0) return null;
 
-  const normalizedGain = parseFloat(gainPercentage);
-  if (Number.isFinite(normalizedGain) && normalizedGain !== 0) {
-    return normalizedGain / 100;
+  const start = startDate instanceof Date ? startDate : new Date(startDate);
+  const end = endDate instanceof Date ? endDate : new Date(endDate);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
+
+  const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
+  const years = totalDays / 365.25;
+
+  const solveRate = (rate) => {
+    return -investment / Math.pow(1 + rate, 0) + terminalValue / Math.pow(1 + rate, years);
+  };
+
+  let low = -0.999;
+  let high = 10;
+  let lowValue = solveRate(low);
+  let highValue = solveRate(high);
+
+  if (lowValue === 0) return low;
+  if (highValue === 0) return high;
+  if (lowValue > 0 && highValue > 0) return null;
+  if (lowValue < 0 && highValue < 0) return null;
+
+  for (let index = 0; index < 200; index += 1) {
+    const mid = (low + high) / 2;
+    const midValue = solveRate(mid);
+
+    if (Math.abs(midValue) < 1e-8) return mid;
+
+    if (midValue > 0) {
+      high = mid;
+    } else {
+      low = mid;
+    }
   }
 
-  if (!terminalValue || terminalValue <= 0) return null;
-  return terminalValue / investment - 1;
+  return (low + high) / 2;
+};
+
+const getInvestmentStartDate = (fundData, historyData = []) => {
+  const candidates = [
+    fundData?.investedOn,
+    fundData?.purchaseDate,
+    fundData?.addedOn,
+    fundData?.createdAt,
+    fundData?.startDate,
+    fundData?.investmentDate,
+    fundData?.date,
+    ...(historyData || []).map((entry) => entry?.date || entry?.Date).filter(Boolean),
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const parsed = new Date(candidate);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+
+  const fallback = new Date();
+  fallback.setFullYear(fallback.getFullYear() - 1);
+  return fallback;
 };
 
 const getDerivedCurrentValue = (fundData) => {
@@ -238,14 +290,15 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   }, [chartSeries]);
 
   const sortBy = useSelector((state) => state.mf.sortBy);
-  const investmentDate = useMemo(() => parseInvestmentDate(currentFund), [currentFund]);
+  const investmentDate = useMemo(() => getInvestmentStartDate(currentFund, historyData), [currentFund, historyData]);
   const xirrEstimate = useMemo(() => {
     return calculateXirrEstimate({
       initialInvestment: invested,
       finalValue: current,
-      gainPercentage: currentFund?.gainLossPercentage,
+      startDate: investmentDate,
+      endDate: new Date(),
     });
-  }, [current, invested, currentFund?.gainLossPercentage]);
+  }, [current, invested, investmentDate]);
 
   const getSortValue = () => {
     if (!sortBy || !["units", "dayChange", "xirr"].includes(sortBy)) return null;
