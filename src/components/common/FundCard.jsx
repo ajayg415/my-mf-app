@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   TrendingUp,
@@ -10,7 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { formatMoney } from "../../utils/utils.js";
+import { formatMoney, formatShortMoney } from "../../utils/utils.js";
 import { MF_NAV_URL, fetchFundDetails } from "../../utils/api.js";
 import { getCachedFund } from "../../services/db";
 
@@ -74,6 +74,68 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   const [selectedRange, setSelectedRange] = useState("1M");
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [activePointIndex, setActivePointIndex] = useState(null);
+  const svgRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!chartConfig || !chartSeries.length || !svgRef.current) return;
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - svgRect.left;
+
+    // Convert screen coordinates to SVG viewBox coords
+    const localX = (mouseX / svgRect.width) * chartConfig.width;
+
+    let closestIndex = 0;
+    let minDiff = Infinity;
+    chartSeries.forEach((point, index) => {
+      const diff = Math.abs(point.x - localX);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = index;
+      }
+    });
+
+    setActivePointIndex(closestIndex);
+  };
+
+  const handleMouseLeave = () => {
+    setActivePointIndex(null);
+  };
+
+  const handleChartTouchMove = (e) => {
+    if (!chartConfig || !chartSeries.length || !svgRef.current) return;
+    
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+
+    const touch = e.touches[0];
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const mouseX = touch.clientX - svgRect.left;
+
+    // Convert screen coordinates to SVG viewBox coords
+    const localX = (mouseX / svgRect.width) * chartConfig.width;
+
+    let closestIndex = 0;
+    let minDiff = Infinity;
+    chartSeries.forEach((point, index) => {
+      const diff = Math.abs(point.x - localX);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestIndex = index;
+      }
+    });
+
+    setActivePointIndex(closestIndex);
+  };
+
+  const handleChartTouchStart = (e) => {
+    handleChartTouchMove(e);
+  };
+
+  const handleChartTouchEnd = () => {
+    setActivePointIndex(null);
+  };
 
   // 1. Safe parsing & Defaults
   const fundList = funds.length > 0 ? funds : [fund];
@@ -146,7 +208,9 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
   const chartSeries = useMemo(() => {
     if (!historyData.length) return [];
 
+    // Sort oldest first
     const orderedData = [...historyData].reverse();
+
     const selectedDays = rangeOptions.find((option) => option.label === selectedRange)?.days || 30;
     const maxPoints = selectedDays > 90 ? 120 : 60;
     const startIndex = Math.max(0, orderedData.length - Math.min(selectedDays, orderedData.length));
@@ -164,10 +228,25 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
     const max = Math.max(...values);
     const range = max - min || 1;
 
+    const width = 500;
+    const height = 240;
+    const paddingLeft = 45;
+    const paddingRight = 5;
+    const paddingTop = 25;
+    const paddingBottom = 40;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    // Y-axis padding (15% on top and bottom)
+    const yMin = Math.max(0, min - range * 0.15);
+    const yMax = max + range * 0.15;
+    const yRange = yMax - yMin || 1;
+
     return sliced.map((entry, index) => {
       const value = parseFloat(entry.nav) || 0;
-      const x = sliced.length === 1 ? 50 : (index / (sliced.length - 1)) * 100;
-      const y = sliced.length === 1 ? 50 : 100 - ((value - min) / range) * 80 - 10;
+      const x = paddingLeft + (sliced.length > 1 ? (index / (sliced.length - 1)) * chartWidth : 0);
+      const y = paddingTop + chartHeight - ((value - yMin) / yRange) * chartHeight;
       const dateValue = entry.date || entry.Date || "";
       const formattedDate = (() => {
         const rawDate = String(dateValue).trim();
@@ -182,64 +261,85 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
     });
   }, [historyData, rangeOptions, selectedRange]);
 
-  const chartPath = useMemo(() => {
-    if (!chartSeries.length) return "";
-    return chartSeries
-      .map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(2)},${point.y.toFixed(2)}`)
-      .join(" ");
+  const chartConfig = useMemo(() => {
+    if (!chartSeries.length) return null;
+    
+    const width = 500;
+    const height = 240;
+    const paddingLeft = 45;
+    const paddingRight = 5;
+    const paddingTop = 25;
+    const paddingBottom = 40;
+
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    const values = chartSeries.map((p) => p.value);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = maxVal - minVal || 1;
+    const yMin = Math.max(0, minVal - range * 0.15);
+    const yMax = maxVal + range * 0.15;
+    const yRange = yMax - yMin || 1;
+
+    return {
+      width,
+      height,
+      paddingLeft,
+      paddingRight,
+      paddingTop,
+      paddingBottom,
+      chartWidth,
+      chartHeight,
+      yMin,
+      yMax,
+      yRange,
+    };
   }, [chartSeries]);
+
+  const svgPaths = useMemo(() => {
+    if (!chartSeries.length || !chartConfig) return { line: "", area: "" };
+
+    const linePath = chartSeries
+      .map((p, index) => `${index === 0 ? "M" : "L"}${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+      .join(" ");
+
+    const first = chartSeries[0];
+    const last = chartSeries[chartSeries.length - 1];
+    const bottomY = chartConfig.paddingTop + chartConfig.chartHeight;
+
+    const areaPath = `
+      ${linePath}
+      L${last.x.toFixed(2)},${bottomY.toFixed(2)}
+      L${first.x.toFixed(2)},${bottomY.toFixed(2)}
+      Z
+    `.trim();
+
+    return { line: linePath, area: areaPath };
+  }, [chartSeries, chartConfig]);
 
   const activePoint = chartSeries[activePointIndex ?? chartSeries.length - 1] || null;
+
   const yTicks = useMemo(() => {
-    if (!chartSeries.length) return [];
-
-    const values = chartSeries.map((point) => point.value).filter((value) => Number.isFinite(value));
-    if (!values.length) return [];
-
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const rawRange = max - min || Math.max(1, Math.abs(max) || 1);
-    const safeRange = Math.max(rawRange, 0.01);
-    const steps = 4;
-
-    return Array.from({ length: steps + 1 }, (_, index) => {
-      const ratio = index / steps;
-      const value = max - safeRange * ratio;
-      return {
-        value,
-        label: `₹${value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-        y: 90 - ratio * 80,
-      };
-    });
-  }, [chartSeries]);
+    if (!chartSeries.length || !chartConfig) return [];
+    const ticksCount = 4;
+    const ticks = [];
+    const step = chartConfig.yRange / (ticksCount - 1);
+    for (let i = 0; i < ticksCount; i++) {
+      const value = chartConfig.yMin + i * step;
+      const y = chartConfig.paddingTop + chartConfig.chartHeight - (i / (ticksCount - 1)) * chartConfig.chartHeight;
+      ticks.push({ value, y });
+    }
+    return ticks;
+  }, [chartSeries, chartConfig]);
 
   const xTicks = useMemo(() => {
-    if (!chartSeries.length) return [];
-
-    const saturdayPoints = chartSeries.filter((point) => {
-      const rawDate = String(point.date || point.Date || "").trim();
-      if (!rawDate) return false;
-      const normalized = rawDate.includes("-") && rawDate.split("-")[0].length === 2 ? rawDate.split("-").reverse().join("-") : rawDate;
-      const parsed = new Date(normalized);
-      return !Number.isNaN(parsed.getTime()) && parsed.getDay() === 6;
-    });
-
-    const sourcePoints = saturdayPoints.length >= 4 ? saturdayPoints : chartSeries;
-    const desiredCount = 4;
-
-    if (!sourcePoints.length) return [];
-
-    if (sourcePoints.length <= desiredCount) {
-      return sourcePoints.map((point, index) => ({ ...point, xPos: 10 + (index / Math.max(1, sourcePoints.length - 1)) * 82 }));
-    }
-
-    return Array.from({ length: desiredCount }, (_, index) => {
-      const ratio = index / (desiredCount - 1);
-      const targetIndex = Math.round(ratio * (sourcePoints.length - 1));
-      const point = sourcePoints[targetIndex];
-      return { ...point, xPos: 10 + ratio * 82 };
-    });
-  }, [chartSeries]);
+    if (!chartSeries.length || !chartConfig) return [];
+    const L = chartSeries.length;
+    if (L <= 1) return [chartSeries[0]];
+    const indices = [0, Math.floor(L * 0.33), Math.floor(L * 0.66), L - 1];
+    return indices.map((idx) => chartSeries[idx]).filter(Boolean);
+  }, [chartSeries, chartConfig]);
 
   const sortBy = useSelector((state) => state.mf.sortBy);
   const investmentDate = useMemo(() => parseInvestmentDate(currentFund), [currentFund]);
@@ -491,7 +591,9 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
                 <div className="flex items-center justify-between text-[11px] text-gray-600">
                   <span className="font-medium text-gray-500">1M NAV history</span>
                   <span className="font-semibold text-gray-800">
-                    {activePoint ? `${activePoint.formattedDate} · ₹${parseFloat(activePoint.value || 0).toFixed(2)}` : `Current ₹${nav.toFixed(2)}`}
+                    {activePointIndex !== null && activePoint
+                      ? `${activePoint.formattedDate} · ₹${parseFloat(activePoint.value || 0).toFixed(2)}`
+                      : `Current ₹${nav.toFixed(2)}`}
                   </span>
                 </div>
 
@@ -499,41 +601,130 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
                   <div className="flex h-20 items-center justify-center rounded-xl bg-gray-50 text-[11px] text-gray-400">
                     Loading chart...
                   </div>
-                ) : chartPath ? (
+                ) : chartConfig && chartSeries.length > 0 ? (
                   <div className="space-y-1.5">
-                    <div className="w-full overflow-hidden rounded-2xl bg-gray-50 p-2">
-                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-44 w-full sm:h-48" role="img" aria-label="NAV history chart">
-                        <line x1="8" y1="90" x2="92" y2="90" stroke="#d1d5db" strokeWidth="0.6" />
-                        <line x1="8" y1="10" x2="8" y2="90" stroke="#d1d5db" strokeWidth="0.6" />
-                        {yTicks.map((tick, index) => (
-                          <g key={`y-${index}`}>
-                            <line x1="8" y1={tick.y} x2="92" y2={tick.y} stroke="#f3f4f6" strokeWidth="0.4" />
-                            <text x="2" y={tick.y + 1} fontSize="3.2" textAnchor="end" fill="#6b7280">
-                              {tick.label}
+                    <div className="w-full overflow-hidden rounded-xl bg-base-50 p-2">
+                      <svg
+                        ref={svgRef}
+                        viewBox={`0 0 ${chartConfig.width} ${chartConfig.height}`}
+                        className="w-full h-44 sm:h-48 overflow-visible select-none touch-none"
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                        onTouchStart={handleChartTouchStart}
+                        onTouchMove={handleChartTouchMove}
+                        onTouchEnd={handleChartTouchEnd}
+                        role="img"
+                        aria-label="NAV history chart"
+                      >
+                        <defs>
+                          {/* Line Gradient */}
+                          <linearGradient id="fundLineGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="oklch(var(--p))" />
+                            <stop offset="100%" stopColor="oklch(var(--s))" />
+                          </linearGradient>
+
+                          {/* Area Fill Gradient */}
+                          <linearGradient id="fundAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="oklch(var(--p))" stopOpacity="0.25" />
+                            <stop offset="100%" stopColor="oklch(var(--p))" stopOpacity="0.0" />
+                          </linearGradient>
+                        </defs>
+
+                        {/* Horizontal Gridlines & Y-Axis Labels */}
+                        {yTicks.map((tick, i) => (
+                          <g key={i} className="opacity-40 transition-opacity duration-200">
+                            <line
+                              x1={chartConfig.paddingLeft}
+                              y1={tick.y}
+                              x2={chartConfig.width - chartConfig.paddingRight}
+                              y2={tick.y}
+                              stroke="currentColor"
+                              strokeWidth="0.8"
+                              strokeDasharray="3 3"
+                              className="text-base-content/25"
+                            />
+                            <text
+                              x={chartConfig.paddingLeft - 8}
+                              y={tick.y + 3}
+                              textAnchor="end"
+                              className="text-[9px] font-bold fill-base-content/70"
+                            >
+                              {formatShortMoney(tick.value)}
                             </text>
                           </g>
                         ))}
-                        {xTicks.map((point, index) => (
-                          <text key={`x-${index}`} x={point.xPos} y="98" fontSize="3.2" textAnchor="middle" fill="#6b7280">
-                            {point.formattedDate}
-                          </text>
-                        ))}
-                        <path d={chartPath} fill="none" stroke="#2563eb" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                        {chartSeries.map((point, index) => (
-                          <circle
-                            key={`${point.date}-${index}`}
-                            cx={point.x}
-                            cy={point.y}
-                            r="1.4"
-                            fill={activePointIndex === index ? "#1d4ed8" : "#2563eb"}
-                            stroke="#fff"
-                            strokeWidth="0.4"
-                            onMouseEnter={() => setActivePointIndex(index)}
-                            onMouseLeave={() => setActivePointIndex(null)}
-                            onTouchStart={() => setActivePointIndex(index)}
-                            onTouchEnd={() => setActivePointIndex(null)}
-                            onClick={() => setActivePointIndex(index)}
+
+                        {/* Vertical Guide Line on Hover */}
+                        {activePointIndex !== null && activePoint && (
+                          <line
+                            x1={activePoint.x}
+                            y1={chartConfig.paddingTop}
+                            x2={activePoint.x}
+                            y2={chartConfig.paddingTop + chartConfig.chartHeight}
+                            stroke="currentColor"
+                            strokeWidth="1.2"
+                            strokeDasharray="4 4"
+                            className="text-primary/50"
                           />
+                        )}
+
+                        {/* Filled Area */}
+                        <path
+                          d={svgPaths.area}
+                          fill="url(#fundAreaGrad)"
+                        />
+
+                        {/* Trend Line */}
+                        <path
+                          d={svgPaths.line}
+                          fill="none"
+                          stroke="url(#fundLineGrad)"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+
+                        {/* Highlight dot on hovered/active element */}
+                        {activePointIndex !== null && activePoint && (
+                          <>
+                            <circle
+                              cx={activePoint.x}
+                              cy={activePoint.y}
+                              r="5.5"
+                              fill="oklch(var(--p))"
+                              fillOpacity="0.3"
+                            />
+                            <circle
+                              cx={activePoint.x}
+                              cy={activePoint.y}
+                              r="3.5"
+                              fill="oklch(var(--p))"
+                              stroke="oklch(var(--b1))"
+                              strokeWidth="1.2"
+                            />
+                          </>
+                        )}
+
+                        {/* X-Axis Ticks & Date Labels */}
+                        {xTicks.map((tick, i) => (
+                          <g key={i}>
+                            <line
+                              x1={tick.x}
+                              y1={chartConfig.paddingTop + chartConfig.chartHeight}
+                              x2={tick.x}
+                              y2={chartConfig.paddingTop + chartConfig.chartHeight + 4}
+                              stroke="currentColor"
+                              className="text-base-content/25"
+                            />
+                            <text
+                              x={tick.x}
+                              y={chartConfig.paddingTop + chartConfig.chartHeight + 14}
+                              textAnchor="middle"
+                              className="text-[8px] font-bold fill-base-content/60"
+                            >
+                              {tick.formattedDate}
+                            </text>
+                          </g>
                         ))}
                       </svg>
                     </div>
