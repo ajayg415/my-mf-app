@@ -396,10 +396,11 @@ const FundCard = ({ fund, funds = [], index = 0, onClick, onEdit, hasEdit = true
 
             <div className="min-w-0 rounded-lg bg-gray-50/70 p-2">
               <p className="text-[12px] text-gray-400 tracking-wide mb-0.5">
-                XIRR
+                1D Change
               </p>
-              <p className={`text-xs font-semibold leading-tight ${getColorClass(xirrEstimate ?? 0)}`}>
-                {xirrEstimate == null ? "—" : `${xirrEstimate >= 0 ? "+" : ""}${(xirrEstimate * 100).toFixed(2)}%`}
+              <p className={`text-xs font-semibold leading-tight ${getColorClass(currentFund.dayChange ?? 0)}`}>
+                {currentFund.dayChange >= 0 ? "+" : ""}
+                {formatMoney(currentFund.dayChange)}
               </p>
             </div>
           </div>

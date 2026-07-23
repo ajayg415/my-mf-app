@@ -42,6 +42,10 @@ const SubHeader = () => {
     }
   }, [funds, location.pathname]);
 
+  const totalDiff = useMemo(() => {
+    return visibleFunds.reduce((sum, fund) => sum + (parseFloat(fund.gainLoss) || 0), 0);
+  }, [visibleFunds]);
+
   const totalDayChange = useMemo(() => {
     return visibleFunds.reduce((sum, fund) => sum + (parseFloat(fund.dayChange) || 0), 0);
   }, [visibleFunds]);
@@ -58,15 +62,31 @@ const SubHeader = () => {
   return (
     <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
       {/* will be used below div for filters*/}
-      <div className="flex items-center gap-2 px-2 text-gray-600">
-        <span className="text-xs font-medium">
+      <div className="flex items-center gap-3 px-2 text-gray-600">
+        <span className="text-xs font-semibold">
           {activeFundsCount} Funds
         </span>
+
         <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
-        <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${isPositiveChange ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
-          {isPositiveChange ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-          <span>{isPositiveChange ? "+" : ""}{formatMoney(totalDayChange)}</span>
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">1D</span>
+          <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${isPositiveChange ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
+            {isPositiveChange ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+            <span>{isPositiveChange ? "+" : ""}{formatMoney(totalDayChange)}</span>
+          </div>
         </div>
+
+        <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
+
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total</span>
+          <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${totalDiff > 0 ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
+            {totalDiff > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+            <span>{totalDiff > 0 ? "+" : ""}{formatMoney(totalDiff)}</span>
+          </div>
+        </div>
+      
       </div>
 
       {/* Label and Icon - Clickable */}
