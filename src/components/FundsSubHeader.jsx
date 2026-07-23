@@ -60,44 +60,43 @@ const SubHeader = () => {
   };
 
   return (
-    <div className="funds-sub-header flex justify-between items-center bg-white  transition-colors py-1">
-      {/* will be used below div for filters*/}
-      <div className="flex items-center gap-3 px-2 text-gray-600">
-        <span className="text-xs font-semibold">
+    <div className="funds-sub-header flex justify-between items-center bg-white border-b border-base-200 transition-colors py-1.5 px-2">
+      {/* Left side stats container */}
+      <div className="flex items-center gap-1.5 sm:gap-3 text-gray-600 min-w-0">
+        <span className="text-[11px] sm:text-xs font-semibold whitespace-nowrap shrink-0">
           {activeFundsCount} Funds
         </span>
 
-        <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
+        <span className="h-3 w-px bg-gray-300 shrink-0" aria-hidden="true" />
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">1D</span>
-          <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${isPositiveChange ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
-            {isPositiveChange ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-            <span>{isPositiveChange ? "+" : ""}{formatMoney(totalDayChange)}</span>
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">1D</span>
+          <div className={`flex items-center gap-0.5 sm:gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold shrink-0 ${isPositiveChange ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
+            {isPositiveChange ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+            <span className="whitespace-nowrap">{isPositiveChange ? "+" : ""}{formatMoney(totalDayChange)}</span>
           </div>
         </div>
 
-        <span className="h-3 w-px bg-gray-300" aria-hidden="true" />
+        <span className="h-3 w-px bg-gray-300 shrink-0" aria-hidden="true" />
 
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total</span>
-          <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${totalDiff > 0 ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
-            {totalDiff > 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-            <span>{totalDiff > 0 ? "+" : ""}{formatMoney(totalDiff)}</span>
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">Total</span>
+          <div className={`flex items-center gap-0.5 sm:gap-1 rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold shrink-0 ${totalDiff > 0 ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}>
+            {totalDiff > 0 ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+            <span className="whitespace-nowrap">{totalDiff > 0 ? "+" : ""}{formatMoney(totalDiff)}</span>
           </div>
         </div>
-      
       </div>
 
-      {/* Label and Icon - Clickable */}
+      {/* Right side Sort button - Clickable */}
       <button
         onClick={handleLabelClick}
-        className="flex items-center gap-1 px-2 cursor-pointer"
+        className="flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 rounded hover:bg-base-100 transition-colors cursor-pointer shrink-0 ml-2"
       >
-        <span className="text-xs font-medium text-gray-600">
+        <span className="text-[11px] sm:text-xs font-medium text-gray-600 whitespace-nowrap">
           {LABEL_OPTIONS[currentLabelIndex].label}
         </span>
-        <ArrowUpDown size={12} className="text-gray-600" />
+        <ArrowUpDown size={11} className="text-gray-600 shrink-0" />
       </button>
     </div>
   );
